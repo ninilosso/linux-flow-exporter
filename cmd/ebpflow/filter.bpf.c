@@ -1,3 +1,21 @@
+/*
+Copyright 2022 Hiroki Shirokura.
+Copyright 2022 Keio University.
+Copyright 2022 Wide Project.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -54,6 +72,12 @@ struct {
   __type(value, struct flowval);
 } flow_stats SEC(".maps");
 
+struct {
+  __uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+  __uint(key_size, sizeof(uint32_t));
+  __uint(value_size, sizeof(uint32_t));
+} events SEC(".maps");
+
 static inline void record(const struct tcphdr *th, const struct iphdr *ih,
                           struct __sk_buff *skb)
 {
@@ -85,7 +109,12 @@ static inline void record(const struct tcphdr *th, const struct iphdr *ih,
     initval.data_bytes = skb->len;
     initval.flow_start_msec = bpf_ktime_get_ns();
     initval.finished = finished;
-    bpf_map_update_elem(&flow_stats, &key, &initval, BPF_ANY);
+    int ret = bpf_map_update_elem(&flow_stats, &key, &initval, BPF_ANY);
+    if (ret == 0)
+      return;
+
+    uint32_t msg = skb->ingress_ifindex;
+    bpf_perf_event_output(skb, &events, BPF_F_CURRENT_CPU, &msg, sizeof(msg));
   }
 }
 
