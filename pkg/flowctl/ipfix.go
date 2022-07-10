@@ -20,6 +20,7 @@ package flowctl
 
 import (
 	"bytes"
+	"fmt"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -205,12 +206,20 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	ticker1 := time.NewTicker(1 * time.Second)
-	ticker60 := time.NewTicker(60 * time.Second)
+	tickerFinished := time.NewTicker(10 * time.Second)
+	ticketForce := time.NewTicker(60 * time.Second)
+	perfEvent, err := ebpfmap.StartReader()
+	if err != nil {
+		return err
+	}
+	defer close(perfEvent)
 
 	for {
 		select {
-		case <-ticker1.C:
+		case pe := <-perfEvent:
+			fmt.Printf("main: map=%d ifindex=%d map-full\n", pe.MapID, pe.Ifindex())
+
+		case <-tickerFinished.C:
 			ebpfFlows, err := ebpfmap.Dump()
 			if err != nil {
 				return err
@@ -225,7 +234,7 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 				return err
 			}
 
-		case <-ticker60.C:
+		case <-ticketForce.C:
 			ebpfFlows, err := ebpfmap.Dump()
 			if err != nil {
 				return err
