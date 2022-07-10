@@ -94,7 +94,7 @@ static inline void record(const struct tcphdr *th, const struct iphdr *ih,
   key.dport = htons(dport);
   key.sport = htons(sport);
   key.proto = proto;
-  if (th->fin == 1)
+  if (th->fin > 0)
     finished = 1;
 
   struct flowval *val = bpf_map_lookup_elem(&flow_stats, &key);
@@ -102,7 +102,8 @@ static inline void record(const struct tcphdr *th, const struct iphdr *ih,
     val->cnt = val->cnt + 1;
     val->data_bytes = val->data_bytes + skb->len;
     val->flow_end_msec = bpf_ktime_get_ns();
-    val->finished = finished;
+    if (val->finished == 0)
+      val->finished = finished;
   } else {
     struct flowval initval = {0};
     initval.cnt = 1;
