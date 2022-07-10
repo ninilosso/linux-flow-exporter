@@ -1,7 +1,13 @@
 maxIpfixMessageLen: 100
 collectors:
+# My test ElastiFlow
 - remoteAddress: 35.194.97.218:2055
   localAddress: 0.0.0.0:50101
+# Local nfcapd/nfdump
+# nfcapd -w -l /tmp/netflow -t 1000 -p 2100
+# nfdump -r /tmp/netflow/nfcapd.202207101030 -o extended
+- remoteAddress: localhost:2100
+  localAddress: 0.0.0.0:50102
 templates:
 - id: 1001
   template:
