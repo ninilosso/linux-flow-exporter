@@ -205,8 +205,9 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	ticker60 := time.NewTicker(60 * time.Second)
 	ticker1 := time.NewTicker(1 * time.Second)
+	ticker60 := time.NewTicker(60 * time.Second)
+
 	for {
 		select {
 		case <-ticker1.C:
