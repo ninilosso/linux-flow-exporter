@@ -218,6 +218,19 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 		select {
 		case pe := <-perfEvent:
 			fmt.Printf("main: map=%d ifindex=%d map-full\n", pe.MapID, pe.Ifindex())
+			ebpfFlows, err := ebpfmap.Dump()
+			if err != nil {
+				return err
+			}
+			if len(ebpfFlows) == 0 {
+				continue
+			}
+			if err := flushCaches(config); err != nil {
+				return err
+			}
+			if err := ebpfmap.DeleteAll(); err != nil {
+				return err
+			}
 
 		case <-tickerFinished.C:
 			ebpfFlows, err := ebpfmap.Dump()
