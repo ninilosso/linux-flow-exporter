@@ -21,7 +21,6 @@ package flowctl
 import (
 	"bytes"
 
-	"github.com/k0kubun/pp"
 	"github.com/spf13/cobra"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/ebpfmap"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/ipfix"
@@ -150,6 +149,7 @@ func fnIpfixDump(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	// pp.Println(flowDataMessages)
 	for _, flowDataMessage := range flowDataMessages {
 		buf2 := bytes.Buffer{}
 		if err := flowDataMessage.Write(&buf2, &config); err != nil {
@@ -165,8 +165,31 @@ func fnIpfixDump(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func T(flows []ebpfmap.Flow) (*ipfix.FlowFile, error) {
-	flow := &ipfix.FlowFile{}
-	pp.Println("out")
-	return flow, nil
+func T(ebflows []ebpfmap.Flow) (*ipfix.FlowFile, error) {
+	flows := []ipfix.Flow{}
+	for _, ebflow := range ebflows {
+		flows = append(flows, ipfix.Flow{
+			IpVersion:                4,
+			SourceIPv4Address:        0x0a010001,
+			DestinationIPv4Address:   0x0a010002,
+			ProtocolIdentifier:       6,
+			SourceTransportPort:      9999,
+			DestinationTransportPort: 22,
+			PacketDeltaCount:         100,
+		})
+		_ = ebflow
+	}
+
+	flowFile := &ipfix.FlowFile{
+		FlowSets: []struct {
+			TemplateID uint16       `yaml:"templateId"`
+			Flows      []ipfix.Flow `yaml:"flows"`
+		}{
+			{
+				TemplateID: uint16(1001),
+				Flows:      flows,
+			},
+		},
+	}
+	return flowFile, nil
 }

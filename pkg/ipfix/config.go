@@ -85,7 +85,7 @@ func (f FlowFile) ToFlowDataMessages(config *Config,
 				},
 			})
 			flowSeq += uint32(n)
-			flows = flows[n+1:]
+			flows = flows[n:]
 		}
 
 	}

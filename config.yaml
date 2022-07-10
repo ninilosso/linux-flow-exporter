@@ -1,3 +1,4 @@
+maxIpfixMessageLen: 100
 collectors:
 - remoteAddress: 35.194.97.218:2055
   localAddress: 0.0.0.0:50101
