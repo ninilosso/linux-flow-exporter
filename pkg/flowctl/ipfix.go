@@ -23,6 +23,7 @@ import (
 
 	"github.com/k0kubun/pp"
 	"github.com/spf13/cobra"
+	"github.com/wide-vsix/linux-flow-exporter/pkg/ebpfmap"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/ipfix"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/util"
 )
@@ -108,13 +109,64 @@ func NewCommandIpfixDump() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&cliOptIpfix.Config, "config", "c", "./config.yaml",
 		"Specifiy ipfix configuration")
-	cmd.Flags().StringVarP(&cliOptIpfix.FlowFile, "flow", "f", "./flow.yaml",
-		"Specifiy ipfix flow file")
 	return cmd
 }
 
 func fnIpfixDump(cmd *cobra.Command, args []string) error {
-	// config := ipfix.Config{}
-	pp.Println("out")
+	config := ipfix.Config{}
+	if err := util.FileUnmarshalAsYaml(cliOptIpfix.Config, &config); err != nil {
+		return err
+	}
+
+	// template
+	buf1 := bytes.Buffer{}
+	templateMessage, err := config.ToFlowTemplatesMessage()
+	if err != nil {
+		return err
+	}
+	templateMessage.Header.SysupTime = 0      // TODO
+	templateMessage.Header.SequenceNumber = 0 // TODO
+	templateMessage.Header.SourceID = 0       // TODO
+	if err := templateMessage.Write(&buf1); err != nil {
+		return err
+	}
+	for _, c := range config.Collectors {
+		if err := util.UdpTransmit(c.LocalAddress, c.RemoteAddress, &buf1); err != nil {
+			return err
+		}
+	}
+
+	// flowdata
+	ebpfFlows, err := ebpfmap.Dump()
+	if err != nil {
+		return err
+	}
+	flow, err := T(ebpfFlows)
+	if err != nil {
+		return err
+	}
+
+	flowDataMessages, err := flow.ToFlowDataMessages(&config, 0)
+	if err != nil {
+		return err
+	}
+	for _, flowDataMessage := range flowDataMessages {
+		buf2 := bytes.Buffer{}
+		if err := flowDataMessage.Write(&buf2, &config); err != nil {
+			return err
+		}
+		for _, c := range config.Collectors {
+			if err := util.UdpTransmit(c.LocalAddress, c.RemoteAddress, &buf2); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
+}
+
+func T(flows []ebpfmap.Flow) (*ipfix.FlowFile, error) {
+	flow := &ipfix.FlowFile{}
+	pp.Println("out")
+	return flow, nil
 }
