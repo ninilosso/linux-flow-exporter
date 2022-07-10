@@ -123,7 +123,8 @@ func fnIpfixDump(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	templateMessage.Header.SysupTime = 0      // TODO
+	templateMessage.Header.SysupTime = 0 // TODO
+	templateMessage.Header.SysupTime = uint32(util.TimeNow())
 	templateMessage.Header.SequenceNumber = 0 // TODO
 	templateMessage.Header.SourceID = 0       // TODO
 	if err := templateMessage.Write(&buf1); err != nil {
@@ -151,6 +152,7 @@ func fnIpfixDump(cmd *cobra.Command, args []string) error {
 	}
 	// pp.Println(flowDataMessages)
 	for _, flowDataMessage := range flowDataMessages {
+		flowDataMessage.Header.SysupTime = uint32(util.TimeNow())
 		buf2 := bytes.Buffer{}
 		if err := flowDataMessage.Write(&buf2, &config); err != nil {
 			return err
@@ -168,16 +170,27 @@ func fnIpfixDump(cmd *cobra.Command, args []string) error {
 func T(ebflows []ebpfmap.Flow) (*ipfix.FlowFile, error) {
 	flows := []ipfix.Flow{}
 	for _, ebflow := range ebflows {
+		s, err := util.KtimeToRealMilli(ebflow.Val.FlowStartMilliSecond / 1000000)
+		if err != nil {
+			return nil, err
+		}
+		e, err := util.KtimeToRealMilli(ebflow.Val.FlowEndMilliSecond / 1000000)
+		if err != nil {
+			return nil, err
+		}
+
 		flows = append(flows, ipfix.Flow{
 			IpVersion:                4,
-			SourceIPv4Address:        0x0a010001,
-			DestinationIPv4Address:   0x0a010002,
-			ProtocolIdentifier:       6,
-			SourceTransportPort:      9999,
-			DestinationTransportPort: 22,
-			PacketDeltaCount:         100,
+			SourceIPv4Address:        util.BS32(ebflow.Key.Saddr),
+			DestinationIPv4Address:   util.BS32(ebflow.Key.Daddr),
+			ProtocolIdentifier:       ebflow.Key.Proto,
+			SourceTransportPort:      ebflow.Key.Sport,
+			DestinationTransportPort: ebflow.Key.Dport,
+			OctetDeltaCount:          uint64(ebflow.Val.FlowBytes),
+			PacketDeltaCount:         uint64(ebflow.Val.FlowPkts),
+			FlowStartMilliseconds:    s,
+			FlowEndMilliseconds:      e,
 		})
-		_ = ebflow
 	}
 
 	flowFile := &ipfix.FlowFile{
@@ -186,7 +199,7 @@ func T(ebflows []ebpfmap.Flow) (*ipfix.FlowFile, error) {
 			Flows      []ipfix.Flow `yaml:"flows"`
 		}{
 			{
-				TemplateID: uint16(1001),
+				TemplateID: uint16(1004),
 				Flows:      flows,
 			},
 		},
