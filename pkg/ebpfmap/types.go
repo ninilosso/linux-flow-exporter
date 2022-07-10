@@ -102,6 +102,10 @@ func GetMapIDsByNameType(mapName string, mapType ebpf.MapType) ([]ebpf.MapID, er
 		if err != nil {
 			return nil, err
 		}
+		if err := m.Close(); err != nil {
+			return nil, err
+		}
+
 		if info.Name != mapName || info.Type != mapType {
 			continue
 		}
@@ -136,6 +140,9 @@ func Dump() ([]Flow, error) {
 		if err := entries.Err(); err != nil {
 			panic(err)
 		}
+		if err := m.Close(); err != nil {
+			return nil, err
+		}
 	}
 	return flows, nil
 }
@@ -151,6 +158,9 @@ func Delete(key FlowKey) error {
 			return err
 		}
 		if err := m.Delete(key); err != nil {
+			return err
+		}
+		if err := m.Close(); err != nil {
 			return err
 		}
 	}
@@ -180,6 +190,9 @@ func DeleteFinished() error {
 				}
 			}
 		}
+		if err := m.Close(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -201,6 +214,9 @@ func DeleteAll() error {
 			if err := m.Delete(key); err != nil {
 				return err
 			}
+		}
+		if err := m.Close(); err != nil {
+			return err
 		}
 	}
 	return nil
