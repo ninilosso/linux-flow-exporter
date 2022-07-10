@@ -157,6 +157,33 @@ func Delete(key FlowKey) error {
 	return nil
 }
 
+func DeleteFinished() error {
+	ids, err := GetMapIDsByNameType(mapName, mapType)
+	if err != nil {
+		return err
+	}
+	for _, id := range ids {
+		m, err := ebpf.NewMapFromID(id)
+		if err != nil {
+			return err
+		}
+		key := FlowKey{}
+		perCpuVals := []FlowVal{}
+		entries := m.Iterate()
+		for entries.Next(&key, &perCpuVals) {
+			for _, perCpuVal := range perCpuVals {
+				if perCpuVal.Finished > 0 {
+					if err := m.Delete(key); err != nil {
+						return err
+					}
+					break
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func DeleteAll() error {
 	ids, err := GetMapIDsByNameType(mapName, mapType)
 	if err != nil {
