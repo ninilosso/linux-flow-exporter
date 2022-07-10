@@ -20,3 +20,27 @@ templates:
   - name: IngressInterface
   - name: OctetDeltaCount
   - name: PacketDeltaCount
+- id: 1004
+  template:
+  - name: SourceIPv4Address
+  - name: DestinationIPv4Address
+  - name: ProtocolIdentifier
+  - name: SourceTransportPort
+  - name: DestinationTransportPort
+  - name: IngressInterface
+  - name: OctetDeltaCount
+  - name: PacketDeltaCount
+  - name: FlowStartMilliseconds
+  - name: FlowEndMilliseconds
+- id: 1005
+  template:
+  - name: SourceIPv4Address
+  - name: DestinationIPv4Address
+  - name: ProtocolIdentifier
+  - name: SourceTransportPort
+  - name: DestinationTransportPort
+  - name: IngressInterface
+  - name: OctetDeltaCount
+  - name: PacketDeltaCount
+  - name: FlowStartNanoseconds
+  - name: FlowEndNanoseconds
