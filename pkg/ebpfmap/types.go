@@ -23,6 +23,7 @@ import (
 	"math"
 
 	"github.com/cilium/ebpf"
+	"github.com/wide-vsix/linux-flow-exporter/pkg/ipfix"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/util"
 )
 
@@ -176,4 +177,44 @@ func DeleteAll() error {
 		}
 	}
 	return nil
+}
+
+func ToIpfixFlowFile(ebflows []Flow) (*ipfix.FlowFile, error) {
+	flows := []ipfix.Flow{}
+	for _, ebflow := range ebflows {
+		s, err := util.KtimeToRealMilli(ebflow.Val.FlowStartMilliSecond / 1000000)
+		if err != nil {
+			return nil, err
+		}
+		e, err := util.KtimeToRealMilli(ebflow.Val.FlowEndMilliSecond / 1000000)
+		if err != nil {
+			return nil, err
+		}
+
+		flows = append(flows, ipfix.Flow{
+			IpVersion:                4,
+			SourceIPv4Address:        util.BS32(ebflow.Key.Saddr),
+			DestinationIPv4Address:   util.BS32(ebflow.Key.Daddr),
+			ProtocolIdentifier:       ebflow.Key.Proto,
+			SourceTransportPort:      ebflow.Key.Sport,
+			DestinationTransportPort: ebflow.Key.Dport,
+			OctetDeltaCount:          uint64(ebflow.Val.FlowBytes),
+			PacketDeltaCount:         uint64(ebflow.Val.FlowPkts),
+			FlowStartMilliseconds:    s,
+			FlowEndMilliseconds:      e,
+		})
+	}
+
+	flowFile := &ipfix.FlowFile{
+		FlowSets: []struct {
+			TemplateID uint16       `yaml:"templateId"`
+			Flows      []ipfix.Flow `yaml:"flows"`
+		}{
+			{
+				TemplateID: uint16(1004),
+				Flows:      flows,
+			},
+		},
+	}
+	return flowFile, nil
 }
