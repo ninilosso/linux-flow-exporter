@@ -21,6 +21,7 @@ package flowctl
 import (
 	"bytes"
 
+	"github.com/k0kubun/pp"
 	"github.com/spf13/cobra"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/ipfix"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/util"
@@ -36,6 +37,7 @@ func NewCommandIpfix() *cobra.Command {
 		Use: "ipfix",
 	}
 	cmd.AddCommand(NewCommandIpfixTemplate())
+	cmd.AddCommand(NewCommandIpfixDump())
 	return cmd
 }
 
@@ -96,5 +98,23 @@ func fnIpfixTemplate(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	return nil
+}
+
+func NewCommandIpfixDump() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:  "dump",
+		RunE: fnIpfixDump,
+	}
+	cmd.Flags().StringVarP(&cliOptIpfix.Config, "config", "c", "./config.yaml",
+		"Specifiy ipfix configuration")
+	cmd.Flags().StringVarP(&cliOptIpfix.FlowFile, "flow", "f", "./flow.yaml",
+		"Specifiy ipfix flow file")
+	return cmd
+}
+
+func fnIpfixDump(cmd *cobra.Command, args []string) error {
+	// config := ipfix.Config{}
+	pp.Println("out")
 	return nil
 }
