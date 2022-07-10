@@ -208,6 +208,7 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 
 	tickerFinished := time.NewTicker(10 * time.Second)
 	ticketForce := time.NewTicker(60 * time.Second)
+	tickerForTemplateFlush := time.NewTicker(30 * time.Second)
 	perfEvent, err := ebpfmap.StartReader()
 	if err != nil {
 		return err
@@ -260,6 +261,24 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 			}
 			if err := ebpfmap.DeleteAll(); err != nil {
 				return err
+			}
+		case <-tickerForTemplateFlush.C:
+			buf1 := bytes.Buffer{}
+			templateMessage, err := config.ToFlowTemplatesMessage()
+			if err != nil {
+				return err
+			}
+			templateMessage.Header.SysupTime = 0 // TODO
+			templateMessage.Header.SysupTime = uint32(util.TimeNow())
+			templateMessage.Header.SequenceNumber = 0 // TODO
+			templateMessage.Header.SourceID = 0       // TODO
+			if err := templateMessage.Write(&buf1); err != nil {
+				return err
+			}
+			for _, c := range config.Collectors {
+				if err := util.UdpTransmit(c.LocalAddress, c.RemoteAddress, &buf1); err != nil {
+					return err
+				}
 			}
 		}
 	}
