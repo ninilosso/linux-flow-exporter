@@ -31,6 +31,60 @@ func NewCommand() *cobra.Command {
 	cmd.AddCommand(NewCommandFlush())
 	cmd.AddCommand(NewCommandIpfix())
 	cmd.AddCommand(NewCommandPrometheus())
+	cmd.AddCommand(NewCommandMeter())
 	cmd.AddCommand(util.NewCmdCompletion(cmd))
+	return cmd
+}
+
+func NewCommandMeter() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "meter",
+	}
+	cmd.AddCommand(NewCommandMeterAttach())
+	cmd.AddCommand(NewCommandMeterDetach())
+	return cmd
+}
+
+var cliOptMeter = struct {
+	Attach struct {
+		Override bool
+		Netns    string
+		Name     string
+	}
+	Detach struct {
+		Netns string
+		Name  string
+	}
+}{}
+
+func NewCommandMeterAttach() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "attach",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			println("hoge")
+			return nil
+		},
+	}
+	cmd.Flags().BoolVarP(&cliOptMeter.Attach.Override, "override", "o", true,
+		"Override current ebpf bytecode")
+	cmd.Flags().StringVar(&cliOptMeter.Attach.Name, "name", "",
+		"Target interface name")
+	cmd.Flags().StringVar(&cliOptMeter.Attach.Netns, "netns", "",
+		"Target interface network namespace name")
+	return cmd
+}
+
+func NewCommandMeterDetach() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "detach",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			println("hoge")
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&cliOptMeter.Detach.Name, "name", "",
+		"Target interface name")
+	cmd.Flags().StringVar(&cliOptMeter.Detach.Netns, "netns", "",
+		"Target interface network namespace name")
 	return cmd
 }
