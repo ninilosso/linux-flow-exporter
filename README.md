@@ -15,6 +15,9 @@ with less performance issues.
   - daemonized agent for IPFIX flow-exporter
   - dump the in-kernel flow-stats from the user-space
   - IPFIX dummy data transmitter for test
+- dependencies (tested)
+  - linux kernel 5.x+
+  - iproute2 5.18+
 
 Requirements(I tested with):
 - `uname -r`: 5.15.0-1008-gcp
