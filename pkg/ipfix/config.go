@@ -22,13 +22,28 @@ import (
 	"fmt"
 )
 
+type OutputCollector struct {
+	RemoteAddress string `yaml:"remoteAddress"`
+	LocalAddress  string `yaml:"localAddress"`
+}
+
+type OutputLog struct {
+	File string `yaml:"file"`
+}
+
+type Output struct {
+	Collector *OutputCollector `yaml:"collector"`
+	Log       *OutputLog       `yaml:"log"`
+}
+
+func (o Output) Valid() bool {
+	return !(o.Collector != nil && o.Log != nil)
+}
+
 type Config struct {
-	MaxIpfixMessageLen int `yaml:"maxIpfixMessageLen"`
-	Collectors         []struct {
-		RemoteAddress string `yaml:"remoteAddress"`
-		LocalAddress  string `yaml:"localAddress"`
-	} `yaml:"collectors"`
-	Templates []struct {
+	MaxIpfixMessageLen int      `yaml:"maxIpfixMessageLen"`
+	Outputs            []Output `yaml:"outputs"`
+	Templates          []struct {
 		ID       uint16 `yaml:"id"`
 		Template []struct {
 			Name string `yaml:"name"`

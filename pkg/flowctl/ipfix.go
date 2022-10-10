@@ -78,9 +78,20 @@ func fnIpfixTemplate(cmd *cobra.Command, args []string) error {
 	if err := templateMessage.Write(&buf1); err != nil {
 		return err
 	}
-	for _, c := range config.Collectors {
-		if err := util.UdpTransmit(c.LocalAddress, c.RemoteAddress, &buf1); err != nil {
-			return err
+	for _, o := range config.Outputs {
+		if !o.Valid() {
+			return fmt.Errorf("invalid config")
+		}
+
+		if o.Log != nil {
+			fmt.Printf("LOG!!!\n")
+		}
+
+		if o.Collector != nil {
+			if err := util.UdpTransmit(o.Collector.LocalAddress,
+				o.Collector.RemoteAddress, &buf1); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -94,9 +105,18 @@ func fnIpfixTemplate(cmd *cobra.Command, args []string) error {
 		if err := flowDataMessage.Write(&buf2, &config); err != nil {
 			return err
 		}
-		for _, c := range config.Collectors {
-			if err := util.UdpTransmit(c.LocalAddress, c.RemoteAddress, &buf2); err != nil {
-				return err
+		for _, o := range config.Outputs {
+			if !o.Valid() {
+				return fmt.Errorf("invalid config")
+			}
+			if o.Log != nil {
+				fmt.Printf("LOG!!\n")
+			}
+			if o.Collector != nil {
+				if err := util.UdpTransmit(o.Collector.LocalAddress,
+					o.Collector.RemoteAddress, &buf2); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -133,9 +153,18 @@ func fnIpfixDump(cmd *cobra.Command, args []string) error {
 	if err := templateMessage.Write(&buf1); err != nil {
 		return err
 	}
-	for _, c := range config.Collectors {
-		if err := util.UdpTransmit(c.LocalAddress, c.RemoteAddress, &buf1); err != nil {
-			return err
+	for _, o := range config.Outputs {
+		if !o.Valid() {
+			return fmt.Errorf("invalid config")
+		}
+		if o.Log != nil {
+			fmt.Printf("LOG!!!\n")
+		}
+		if o.Collector != nil {
+			if err := util.UdpTransmit(o.Collector.LocalAddress,
+				o.Collector.RemoteAddress, &buf1); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -161,9 +190,18 @@ func fnIpfixDump(cmd *cobra.Command, args []string) error {
 		if err := flowDataMessage.Write(&buf2, &config); err != nil {
 			return err
 		}
-		for _, c := range config.Collectors {
-			if err := util.UdpTransmit(c.LocalAddress, c.RemoteAddress, &buf2); err != nil {
-				return err
+		for _, o := range config.Outputs {
+			if !o.Valid() {
+				return fmt.Errorf("invalid config")
+			}
+			if o.Log != nil {
+				fmt.Printf("LOG193934n")
+			}
+			if o.Collector != nil {
+				if err := util.UdpTransmit(o.Collector.LocalAddress,
+					o.Collector.RemoteAddress, &buf2); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -200,9 +238,18 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 	if err := templateMessage.Write(&buf1); err != nil {
 		return err
 	}
-	for _, c := range config.Collectors {
-		if err := util.UdpTransmit(c.LocalAddress, c.RemoteAddress, &buf1); err != nil {
-			return err
+	for _, o := range config.Outputs {
+		if !o.Valid() {
+			return fmt.Errorf("invalid config")
+		}
+		if o.Log != nil {
+			fmt.Printf("LOG3939493\n")
+		}
+		if o.Collector != nil {
+			if err := util.UdpTransmit(o.Collector.LocalAddress,
+				o.Collector.RemoteAddress, &buf1); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -275,9 +322,18 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 			if err := templateMessage.Write(&buf1); err != nil {
 				return err
 			}
-			for _, c := range config.Collectors {
-				if err := util.UdpTransmit(c.LocalAddress, c.RemoteAddress, &buf1); err != nil {
-					return err
+			for _, o := range config.Outputs {
+				if !o.Valid() {
+					return fmt.Errorf("invalid config")
+				}
+				if o.Log != nil {
+					fmt.Printf("LOG194943913\n")
+				}
+				if o.Collector != nil {
+					if err := util.UdpTransmit(o.Collector.LocalAddress,
+						o.Collector.RemoteAddress, &buf1); err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -311,9 +367,18 @@ func flushCachesFinished(config ipfix.Config) error {
 		if err := flowDataMessage.Write(&buf2, &config); err != nil {
 			return err
 		}
-		for _, c := range config.Collectors {
-			if err := util.UdpTransmit(c.LocalAddress, c.RemoteAddress, &buf2); err != nil {
-				return err
+		for _, o := range config.Outputs {
+			if !o.Valid() {
+				return fmt.Errorf("invalid config")
+			}
+			if o.Log != nil {
+				fmt.Printf("LOG1949393\n")
+			}
+			if o.Collector != nil {
+				if err := util.UdpTransmit(o.Collector.LocalAddress,
+					o.Collector.RemoteAddress, &buf2); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -340,9 +405,18 @@ func flushCaches(config ipfix.Config) error {
 		if err := flowDataMessage.Write(&buf2, &config); err != nil {
 			return err
 		}
-		for _, c := range config.Collectors {
-			if err := util.UdpTransmit(c.LocalAddress, c.RemoteAddress, &buf2); err != nil {
-				return err
+		for _, o := range config.Outputs {
+			if !o.Valid() {
+				return fmt.Errorf("invalid config")
+			}
+			if o.Log != nil {
+				fmt.Printf("LOG94939134\n")
+			}
+			if o.Collector != nil {
+				if err := util.UdpTransmit(o.Collector.LocalAddress,
+					o.Collector.RemoteAddress, &buf2); err != nil {
+					return err
+				}
 			}
 		}
 	}
