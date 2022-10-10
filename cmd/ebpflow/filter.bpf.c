@@ -35,6 +35,7 @@ limitations under the License.
 #define IP_MF     0x2000
 #define IP_OFFSET 0x1FFF
 #define INTERFACE_MAX_FLOW_LIMIT 6
+#define MAX_INTERFACES 512
 
 #define assert_len(interest, end)                 \
   ({                                              \
@@ -65,6 +66,14 @@ struct flowval {
   uint8_t finished;
 }  __attribute__ ((packed));
 
+struct metricsval {
+  uint32_t syn_pkts;
+  uint32_t total_pkts;
+  uint32_t total_bytes;
+  uint32_t overflow_pkts;
+  uint32_t overflow_bytes;
+}  __attribute__ ((packed));
+
 struct {
   __uint(type, BPF_MAP_TYPE_PERCPU_HASH);
   __uint(max_entries, INTERFACE_MAX_FLOW_LIMIT);
@@ -77,6 +86,48 @@ struct {
   __uint(key_size, sizeof(uint32_t));
   __uint(value_size, sizeof(uint32_t));
 } events SEC(".maps");
+
+struct {
+  __uint(type, BPF_MAP_TYPE_PERCPU_HASH);
+  __uint(max_entries, MAX_INTERFACES);
+  __type(key, uint32_t);
+  __type(value, struct metricsval);
+} metrics SEC(".maps");
+
+static inline void metrics_count_syn(uint32_t ifindex)
+{
+    struct metricsval *mv = bpf_map_lookup_elem(&metrics, &ifindex);
+    if (mv) {
+      mv->syn_pkts = mv->syn_pkts + 1;
+    } else {
+      struct metricsval initval = {0};
+      initval.syn_pkts = 1;
+      bpf_map_update_elem(&metrics, &ifindex, &initval, BPF_ANY);
+    }
+}
+
+static inline void metrics_count_final(struct __sk_buff *skb, bool overflow)
+{
+  uint32_t ifindex = skb->ingress_ifindex;
+  struct metricsval *mv = bpf_map_lookup_elem(&metrics, &ifindex);
+  if (mv) {
+    mv->total_pkts = mv->total_pkts + 1;
+    mv->total_bytes = mv->total_bytes + skb->len;
+    if (overflow) {
+      mv->overflow_pkts = mv->overflow_pkts + 1;
+      mv->overflow_bytes = mv->overflow_bytes + skb->len;
+    }
+  } else {
+    struct metricsval initval = {0};
+    initval.total_pkts = 1;
+    initval.total_bytes = skb->len;
+    if (overflow) {
+      initval.overflow_pkts = 1;
+      initval.overflow_bytes = skb->len;
+    }
+    bpf_map_update_elem(&metrics, &ifindex, &initval, BPF_ANY);
+  }
+}
 
 static inline void record(const struct tcphdr *th, const struct iphdr *ih,
                           struct __sk_buff *skb)
@@ -97,6 +148,7 @@ static inline void record(const struct tcphdr *th, const struct iphdr *ih,
   if (th->fin > 0)
     finished = 1;
 
+  bool overflow = false;
   struct flowval *val = bpf_map_lookup_elem(&flow_stats, &key);
   if (val) {
     val->cnt = val->cnt + 1;
@@ -111,12 +163,14 @@ static inline void record(const struct tcphdr *th, const struct iphdr *ih,
     initval.flow_start_msec = bpf_ktime_get_ns();
     initval.finished = finished;
     int ret = bpf_map_update_elem(&flow_stats, &key, &initval, BPF_ANY);
-    if (ret == 0)
-      return;
-
-    uint32_t msg = skb->ingress_ifindex;
-    bpf_perf_event_output(skb, &events, BPF_F_CURRENT_CPU, &msg, sizeof(msg));
+    if (ret != 0) {
+      uint32_t msg = skb->ingress_ifindex;
+      bpf_perf_event_output(skb, &events, BPF_F_CURRENT_CPU, &msg, sizeof(msg));
+      overflow = true;
+    }
   }
+
+  metrics_count_final(skb, overflow);
 }
 
 static inline int
