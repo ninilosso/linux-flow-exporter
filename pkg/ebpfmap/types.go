@@ -30,6 +30,9 @@ import (
 const (
 	mapName = "flow_stats"
 	mapType = ebpf.PerCPUHash
+
+	metricsMapName = "metrics"
+	metricsMapType = ebpf.PerCPUHash
 )
 
 type FlowKey struct {
@@ -112,6 +115,46 @@ func GetMapIDsByNameType(mapName string, mapType ebpf.MapType) ([]ebpf.MapID, er
 		ids = append(ids, id)
 	}
 	return ids, nil
+}
+
+type StatsMetricsVal struct {
+	SynPkts       uint32 `json:"syn_pkts"`
+	OverflowPkts  uint32 `json:"overflow_pkts"`
+	OverflowBytes uint32 `json:"overflow_bytes"`
+	TotalPkts     uint32 `json:"total_pkts"`
+	TotalBytes    uint32 `json:"total_bytes"`
+}
+
+func GetStats() (map[uint32]StatsMetricsVal, error) {
+	ids, err := GetMapIDsByNameType(metricsMapName, metricsMapType)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := map[uint32]StatsMetricsVal{}
+	for _, id := range ids {
+		m, err := ebpf.NewMapFromID(id)
+		if err != nil {
+			return nil, err
+		}
+
+		var key uint32
+		perCpuVals := []StatsMetricsVal{}
+		entries := m.Iterate()
+		for entries.Next(&key, &perCpuVals) {
+			val := StatsMetricsVal{}
+			for _, perCpuVal := range perCpuVals {
+				val.SynPkts += perCpuVal.SynPkts
+				val.OverflowPkts += perCpuVal.OverflowPkts
+				val.OverflowBytes += perCpuVal.OverflowBytes
+				val.TotalPkts += perCpuVal.TotalPkts
+				val.TotalBytes += perCpuVal.TotalBytes
+			}
+			ret[key] = val
+		}
+	}
+
+	return ret, nil
 }
 
 func Dump() ([]Flow, error) {

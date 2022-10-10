@@ -30,6 +30,7 @@ func NewCommand() *cobra.Command {
 	cmd.AddCommand(NewCommandDump())
 	cmd.AddCommand(NewCommandFlush())
 	cmd.AddCommand(NewCommandIpfix())
+	cmd.AddCommand(NewCommandPrometheus())
 	cmd.AddCommand(util.NewCmdCompletion(cmd))
 	return cmd
 }
