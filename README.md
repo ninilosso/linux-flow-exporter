@@ -21,6 +21,8 @@ Requirements(I tested with):
 - `ip -V`: ip utility, iproute2-5.18.0, libbpf 0.8.0
   - iproute2 is needed to attach ebpf program into the kernel.
 
+![](./img/linux_datapath.drawio.svg)
+
 ## Example Usage
 
 ```yaml
@@ -65,4 +67,5 @@ curl -XDELETE http://$ELASTIFLOW_ES_IPADDRESS:9200/elastiflow-flow-codex-1.4-197
 
 ## Background Why we need
 
-![](./img/linux_datapath.drawio.svg)
+- conntrack doesn't support async traffic
+- libpcap based approach consume extreamly big computing cost
