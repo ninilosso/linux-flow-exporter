@@ -32,14 +32,14 @@ for link in links:
 
     filter_configured = False
     for filter in execute(f"tc -j filter list dev {link['ifname']}"+
-        " ingress pref 100 chain 0 handle 0x1 protocol all"):
+        " egress pref 100 chain 0 handle 0x1 protocol all"):
       if filter["kind"] == "bpf" and "options" in filter:
-        if filter["options"]["bpf_name"] == "filter.bpf.o:[tc-ingress]":
+        if filter["options"]["bpf_name"] == "filter.bpf.o:[tc-egress]":
           filter_configured = True
           break
     if not filter_configured:
-      execute(f"tc filter add dev {link['ifname']} ingress "+
-        "pref 100 bpf obj cmd/ebpflow/filter.bpf.o section tc-ingress", nojson=True)
+      execute(f"tc filter add dev {link['ifname']} egress "+
+        "pref 100 bpf obj cmd/ebpflow/filter.bpf.o section tc-egress", nojson=True)
       print(f"{link['ifname']}/filter configured")
     else:
       print(f"{link['ifname']}/filter unchanged")

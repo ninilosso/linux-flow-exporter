@@ -145,7 +145,7 @@ static inline void record(const struct tcphdr *th, const struct iphdr *ih,
   key.dport = htons(dport);
   key.sport = htons(sport);
   key.proto = proto;
-  if (th->fin > 0)
+  if (th->fin > 0 || th->rst > 0)
     finished = 1;
 
   bool overflow = false;
@@ -195,7 +195,14 @@ process_ipv4_tcp(struct __sk_buff *skb)
 static inline int
 process_ipv4_icmp(struct __sk_buff *skb)
 {
-  printk("icmp packet");
+  // printk("icmp packet");
+  return TC_ACT_OK;
+}
+
+static inline int
+process_ipv4_udp(struct __sk_buff *skb)
+{
+  // printk("udp packet");
   return TC_ACT_OK;
 }
 
@@ -218,6 +225,8 @@ process_ipv4(struct __sk_buff *skb)
     return process_ipv4_icmp(skb);
   case IPPROTO_TCP:
     return process_ipv4_tcp(skb);
+  case IPPROTO_UDP:
+    return process_ipv4_udp(skb);
   default:
     return TC_ACT_OK;
   }
@@ -245,12 +254,18 @@ process_ethernet(struct __sk_buff *skb)
 SEC("tc-ingress") int
 count_packets_ingress(struct __sk_buff *skb)
 {
+  char msg[] = "ifindex=%u,%u";
+  bpf_trace_printk(msg, sizeof(msg), skb->ingress_ifindex, skb->ifindex);
+  skb->mark = 0;
   return process_ethernet(skb);
 }
 
 SEC("tc-egress") int
 count_packets_egress(struct __sk_buff *skb)
 {
+  char msg[] = "ifindex=%u,%u,%u";
+  bpf_trace_printk(msg, sizeof(msg), skb->ingress_ifindex, skb->ifindex, skb->mark);
+  skb->mark = 0;
   return process_ethernet(skb);
 }
 
