@@ -25,6 +25,10 @@ import (
 type OutputCollector struct {
 	RemoteAddress string `yaml:"remoteAddress"`
 	LocalAddress  string `yaml:"localAddress"`
+
+	// TimerTemplateFlushSeconds     uint `yaml:"timerTeamplateFlushSeconds"`
+	// TimerFinishedFlowFlushSeconds uint `yaml:"timerFinishedFlowFlushSeconds"`
+	// TimerForceFlushSeconds        uint `yaml:"timerForceFlushSeconds"`
 }
 
 type OutputLog struct {
