@@ -32,7 +32,7 @@ outputs:
     # nfcapd -w -l /tmp/netflow -t 1000 -p 2100
     # nfdump -r /tmp/netflow/nfcapd.202207101030 -o extended
 - log:
-    path: /tmp/flow.log
+    file: /tmp/flow.log
 
 templates:
 - id: 1001
