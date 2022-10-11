@@ -23,7 +23,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-logr/zapr"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+
 	"github.com/wide-vsix/linux-flow-exporter/pkg/ebpfmap"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/ipfix"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/util"
@@ -344,31 +347,31 @@ func flushCachesFinished(config ipfix.Config) error {
 		}
 	}
 
-	flow, err := ebpfmap.ToIpfixFlowFile(ebpfFlows)
-	if err != nil {
-		return err
-	}
-
-	flowDataMessages, err := flow.ToFlowDataMessages(&config, 0)
-	if err != nil {
-		return err
-	}
-	for _, flowDataMessage := range flowDataMessages {
-		flowDataMessage.Header.SysupTime = uint32(util.TimeNow())
-		buf2 := bytes.Buffer{}
-		if err := flowDataMessage.Write(&buf2, &config); err != nil {
-			return err
+	for _, o := range config.Outputs {
+		if !o.Valid() {
+			return fmt.Errorf("invalid config")
 		}
-		for _, o := range config.Outputs {
-			if !o.Valid() {
-				return fmt.Errorf("invalid config")
+		if o.Log != nil {
+			if err := FlowOutputLog(ebpfFlows, o.Log.File); err != nil {
+				return err
 			}
-			if o.Log != nil {
-				if err := FlowOutputLog(ebpfFlows); err != nil {
+		}
+
+		if o.Collector != nil {
+			flow, err := ebpfmap.ToIpfixFlowFile(ebpfFlows)
+			if err != nil {
+				return err
+			}
+			flowDataMessages, err := flow.ToFlowDataMessages(&config, 0)
+			if err != nil {
+				return err
+			}
+			for _, flowDataMessage := range flowDataMessages {
+				flowDataMessage.Header.SysupTime = uint32(util.TimeNow())
+				buf2 := bytes.Buffer{}
+				if err := flowDataMessage.Write(&buf2, &config); err != nil {
 					return err
 				}
-			}
-			if o.Collector != nil {
 				if err := util.UdpTransmit(o.Collector.LocalAddress,
 					o.Collector.RemoteAddress, &buf2); err != nil {
 					return err
@@ -384,31 +387,31 @@ func flushCaches(config ipfix.Config) error {
 	if err != nil {
 		return err
 	}
-	flow, err := ebpfmap.ToIpfixFlowFile(ebpfFlows)
-	if err != nil {
-		return err
-	}
-
-	flowDataMessages, err := flow.ToFlowDataMessages(&config, 0)
-	if err != nil {
-		return err
-	}
-	for _, flowDataMessage := range flowDataMessages {
-		flowDataMessage.Header.SysupTime = uint32(util.TimeNow())
-		buf2 := bytes.Buffer{}
-		if err := flowDataMessage.Write(&buf2, &config); err != nil {
-			return err
+	for _, o := range config.Outputs {
+		if !o.Valid() {
+			return fmt.Errorf("invalid config")
 		}
-		for _, o := range config.Outputs {
-			if !o.Valid() {
-				return fmt.Errorf("invalid config")
+		if o.Log != nil {
+			if err := FlowOutputLog(ebpfFlows, o.Log.File); err != nil {
+				return err
 			}
-			if o.Log != nil {
-				if err := FlowOutputLog(ebpfFlows); err != nil {
+		}
+
+		if o.Collector != nil {
+			flow, err := ebpfmap.ToIpfixFlowFile(ebpfFlows)
+			if err != nil {
+				return err
+			}
+			flowDataMessages, err := flow.ToFlowDataMessages(&config, 0)
+			if err != nil {
+				return err
+			}
+			for _, flowDataMessage := range flowDataMessages {
+				flowDataMessage.Header.SysupTime = uint32(util.TimeNow())
+				buf2 := bytes.Buffer{}
+				if err := flowDataMessage.Write(&buf2, &config); err != nil {
 					return err
 				}
-			}
-			if o.Collector != nil {
 				if err := util.UdpTransmit(o.Collector.LocalAddress,
 					o.Collector.RemoteAddress, &buf2); err != nil {
 					return err
@@ -419,9 +422,20 @@ func flushCaches(config ipfix.Config) error {
 	return nil
 }
 
-func FlowOutputLog(flows []ebpfmap.Flow) error {
+func FlowOutputLog(flows []ebpfmap.Flow, out string) error {
+	cfg := zap.NewProductionConfig()
+	cfg.OutputPaths = []string{
+		out,
+	}
+	zapLog, err := cfg.Build()
+	if err != nil {
+		panic(fmt.Sprintf("who watches the watchmen (%v)?", err))
+	}
+	log := zapr.NewLogger(zapLog)
+
 	for _, flow := range flows {
-		fmt.Printf("%s %+v\n", flow.Key.String(), flow.Val)
+		s := fmt.Sprintf("%s %+v\n", flow.Key.String(), flow.Val)
+		log.Info(s)
 	}
 	return nil
 }
