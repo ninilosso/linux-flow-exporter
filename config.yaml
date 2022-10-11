@@ -1,4 +1,15 @@
 maxIpfixMessageLen: 100
+
+## FUTURE PLAN??
+# flowMetering:
+#   interfaces:
+#   - name: eth1
+#     netns: ns0
+#   - name: eth2
+#     netns: ns0
+#   - name: eth3
+#     netns: ns0
+
 outputs:
 - collector:
     remoteAddress: 35.194.97.218:2055
