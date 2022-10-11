@@ -43,6 +43,7 @@ type FlowKey struct {
 	Sport          uint16
 	Dport          uint16
 	Proto          uint8
+	Mark           uint32
 }
 
 type FlowVal struct {

@@ -261,7 +261,6 @@ count_packets_ingress(struct __sk_buff *skb)
 {
   char msg[] = "ifindex=%u,%u";
   bpf_trace_printk(msg, sizeof(msg), skb->ingress_ifindex, skb->ifindex);
-  skb->mark = 0;
   return process_ethernet(skb);
 }
 
@@ -270,7 +269,6 @@ count_packets_egress(struct __sk_buff *skb)
 {
   char msg[] = "ifindex=%u,%u,%u";
   bpf_trace_printk(msg, sizeof(msg), skb->ingress_ifindex, skb->ifindex, skb->mark);
-  skb->mark = 0;
   return process_ethernet(skb);
 }
 
