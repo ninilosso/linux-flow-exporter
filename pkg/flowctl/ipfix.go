@@ -420,6 +420,8 @@ func flushCaches(config ipfix.Config) error {
 }
 
 func FlowOutputLog(flows []ebpfmap.Flow) error {
-	fmt.Printf("LOGGING!!! TODO\n")
+	for _, flow := range flows {
+		fmt.Printf("%s %+v\n", flow.Key.String(), flow.Val)
+	}
 	return nil
 }
