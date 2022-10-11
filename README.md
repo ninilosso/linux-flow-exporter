@@ -48,13 +48,9 @@ templates:
 git clone <this-repo>
 cd <this-repo>
 sudo ./misc/create_netns.sh
-sudo ip netns exec ns0 bash
-tc qdisc add dev eth1 clsact
-tc qdisc add dev eth2 clsact
-tc qdisc add dev eth3 clsact
-tc filter add dev eth1 egress pref 100 bpf obj ./cmd/ebpflow/filter.bpf.o section tc-egress
-tc filter add dev eth2 egress pref 100 bpf obj ./cmd/ebpflow/filter.bpf.o section tc-egress
-tc filter add dev eth3 egress pref 100 bpf obj ./cmd/ebpflow/filter.bpf.o section tc-egress
+sudo flowctl meter attach --netns ns0 -n eth1
+sudo flowctl meter attach --netns ns0 -n eth2
+sudo flowctl meter attach --netns ns0 -n eth3
 ```
 
 ### flowctl usage
