@@ -50,12 +50,14 @@ limitations under the License.
   })
 
 struct flowkey {
-  uint32_t ifindex;
+  uint32_t ingress_ifindex;
+  uint32_t egress_ifindex;
   uint32_t saddr;
   uint32_t daddr;
   uint16_t sport;
   uint16_t dport;
   uint8_t proto;
+  uint32_t mark;
 }  __attribute__ ((packed));
 
 struct flowval {
@@ -108,8 +110,8 @@ static inline void metrics_count_syn(uint32_t ifindex)
 
 static inline void metrics_count_final(struct __sk_buff *skb, bool overflow)
 {
-  uint32_t ifindex = skb->ingress_ifindex;
-  struct metricsval *mv = bpf_map_lookup_elem(&metrics, &ifindex);
+  uint32_t ingress_ifindex = skb->ingress_ifindex;
+  struct metricsval *mv = bpf_map_lookup_elem(&metrics, &ingress_ifindex);
   if (mv) {
     mv->total_pkts = mv->total_pkts + 1;
     mv->total_bytes = mv->total_bytes + skb->len;
@@ -125,7 +127,7 @@ static inline void metrics_count_final(struct __sk_buff *skb, bool overflow)
       initval.overflow_pkts = 1;
       initval.overflow_bytes = skb->len;
     }
-    bpf_map_update_elem(&metrics, &ifindex, &initval, BPF_ANY);
+    bpf_map_update_elem(&metrics, &ingress_ifindex, &initval, BPF_ANY);
   }
 }
 
@@ -138,13 +140,16 @@ static inline void record(const struct tcphdr *th, const struct iphdr *ih,
   uint32_t saddr = ih->saddr;
   uint8_t proto = ih->protocol;
   uint8_t finished = 0;
+  uint32_t mark = skb->mark;
   struct flowkey key = {0};
-  key.ifindex = skb->ingress_ifindex;
+  key.ingress_ifindex = skb->ingress_ifindex;
+  key.egress_ifindex = skb->ifindex;
   key.daddr = daddr;
   key.saddr = saddr;
   key.dport = htons(dport);
   key.sport = htons(sport);
   key.proto = proto;
+  key.mark = mark;
   if (th->fin > 0 || th->rst > 0)
     finished = 1;
 

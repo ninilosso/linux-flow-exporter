@@ -49,7 +49,7 @@ func fnDump(cmd *cobra.Command, args []string) error {
 	}
 
 	table := util.NewTableWriter(os.Stdout)
-	hdr := []string{"Ifindex", "Proto", "Src", "Dst", "Pkts", "Bytes"}
+	hdr := []string{"Iif", "Oif", "Proto", "Src", "Dst", "Pkts", "Bytes"}
 	if cliOptDump.Output == "wide" {
 		hdr = append(hdr, []string{"Start", "End", "Finished"}...)
 	}
@@ -57,7 +57,8 @@ func fnDump(cmd *cobra.Command, args []string) error {
 
 	for _, flow := range flows {
 		data := []string{
-			fmt.Sprintf("%d", flow.Key.Ifindex),
+			fmt.Sprintf("%d", flow.Key.IngressIfindex),
+			fmt.Sprintf("%d", flow.Key.EgressIfindex),
 			fmt.Sprintf("%d", flow.Key.Proto),
 			fmt.Sprintf("%s:%d", util.ConvertUint32ToIP(flow.Key.Saddr), flow.Key.Sport),
 			fmt.Sprintf("%s:%d", util.ConvertUint32ToIP(flow.Key.Daddr), flow.Key.Dport),

@@ -36,12 +36,13 @@ const (
 )
 
 type FlowKey struct {
-	Ifindex uint32
-	Saddr   uint32
-	Daddr   uint32
-	Sport   uint16
-	Dport   uint16
-	Proto   uint8
+	IngressIfindex uint32
+	EgressIfindex  uint32
+	Saddr          uint32
+	Daddr          uint32
+	Sport          uint16
+	Dport          uint16
+	Proto          uint8
 }
 
 type FlowVal struct {
@@ -60,8 +61,9 @@ type Flow struct {
 func (k FlowKey) String() string {
 	saddr := util.ConvertUint32ToIP(k.Saddr)
 	daddr := util.ConvertUint32ToIP(k.Daddr)
-	return fmt.Sprintf("%d/%d/%s:%d/%s:%d",
-		k.Ifindex,
+	return fmt.Sprintf("%d/%d/%d/%s:%d/%s:%d",
+		k.IngressIfindex,
+		k.EgressIfindex,
 		k.Proto,
 		saddr.String(),
 		k.Sport,
