@@ -434,8 +434,7 @@ func FlowOutputLog(flows []ebpfmap.Flow, out string) error {
 	log := zapr.NewLogger(zapLog)
 
 	for _, flow := range flows {
-		s := fmt.Sprintf("%s %+v\n", flow.Key.String(), flow.Val)
-		log.Info(s)
+		log.Info("flowlog", flow.ToZap()...)
 	}
 	return nil
 }

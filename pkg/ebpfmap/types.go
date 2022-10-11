@@ -307,3 +307,21 @@ func ToIpfixFlowFile(ebflows []Flow) (*ipfix.FlowFile, error) {
 	}
 	return flowFile, nil
 }
+
+func (f Flow) ToZap() []interface{} {
+	return []interface{}{
+		"src", util.ConvertUint32ToIP(f.Key.Saddr).String(),
+		"dst", util.ConvertUint32ToIP(f.Key.Daddr).String(),
+		"proto", f.Key.Proto,
+		"sport", f.Key.Sport,
+		"dport", f.Key.Dport,
+		"ingressIfindex", f.Key.IngressIfindex,
+		"egressIfindex", f.Key.EgressIfindex,
+		"pkts", f.Val.FlowPkts,
+		"bytes", f.Val.FlowBytes,
+		"action", f.Key.Mark,
+		"start", f.Val.FlowStartMilliSecond,
+		"end", f.Val.FlowEndMilliSecond,
+		"finished", f.Val.Finished,
+	}
+}
