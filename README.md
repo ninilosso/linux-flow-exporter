@@ -83,6 +83,7 @@ curl -XDELETE http://$ELASTIFLOW_ES_IPADDRESS:9200/elastiflow-flow-codex-1.4-197
 - libpcap based approach consume extreamly big computing cost
 
 REFS
+- [Let's read RFC regarding IPFIX (ja) by Asama-san](https://enog.jp/wordpress/wp-content/uploads/2011/12/ipfix.pdf)
 - [SKB Definition](https://elixir.bootlin.com/linux/latest/source/include/linux/skbuff.h)
 - [Connection Tracking (conntrack): Design and Implementation Inside Linux Kernel](https://arthurchiao.art/blog/conntrack-design-and-implementation/)
 - [Packet mark in a Cloud Native world, LPC](https://lpc.events/event/7/contributions/683/attachments/554/979/lpc20-pkt-mark-slides.pdf)
