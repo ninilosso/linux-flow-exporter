@@ -87,3 +87,82 @@ REFS
 - [SKB Definition](https://elixir.bootlin.com/linux/latest/source/include/linux/skbuff.h)
 - [Connection Tracking (conntrack): Design and Implementation Inside Linux Kernel](https://arthurchiao.art/blog/conntrack-design-and-implementation/)
 - [Packet mark in a Cloud Native world, LPC](https://lpc.events/event/7/contributions/683/attachments/554/979/lpc20-pkt-mark-slides.pdf)
+- [VMware NSX IPFIX for Distributed Firewall](https://docs.vmware.com/en/VMware-NSX-Data-Center-for-vSphere/6.4/com.vmware.nsx.admin.doc/GUID-2C625B52-17F0-4604-B5C9-6DF1FA9A70F8.html)
+- [VMware NSX IPFIX for Logical Switch](https://docs.vmware.com/en/VMware-NSX-Data-Center-for-vSphere/6.4/com.vmware.nsx.admin.doc/GUID-6054CF07-3019-4539-A6CC-1F613E275E27.html)
+
+## Specification
+
+### Supported Text Log Keys
+
+supported
+```
+src, string
+dst, string
+proto, string
+```
+
+consideration to support
+```
+matched acl rule number
+```
+
+### Supported IPFIX IETF IE
+
+reference: [IANA registration](https://www.iana.org/assignments/ipfix/ipfix.xhtml)
+
+```
+  {"FlowEndMilliseconds", netflow.IPFIX_FIELD_flowEndMilliseconds, 8},
+  {"FlowStartMilliseconds", netflow.IPFIX_FIELD_flowStartMilliseconds, 8},
+  {"FlowEndNanoseconds", netflow.IPFIX_FIELD_flowEndNanoseconds, 8},
+  {"FlowStartNanoseconds", netflow.IPFIX_FIELD_flowStartNanoseconds, 8},
+  {"OctetDeltaCount", netflow.IPFIX_FIELD_octetDeltaCount, 8},
+  {"PacketDeltaCount", netflow.IPFIX_FIELD_packetDeltaCount, 8},
+  {"IpVersion", netflow.IPFIX_FIELD_ipVersion, 1},
+  {"IngressInterface", netflow.IPFIX_FIELD_ingressInterface, 4},
+  {"EgressInterface", netflow.IPFIX_FIELD_egressInterface, 4},
+  {"SourceIPv4Address", netflow.IPFIX_FIELD_sourceIPv4Address, 4},
+  {"DestinationIPv4Address", netflow.IPFIX_FIELD_destinationIPv4Address, 4},
+  {"ProtocolIdentifier", netflow.IPFIX_FIELD_protocolIdentifier, 1},
+  {"SourceTransportPort", netflow.IPFIX_FIELD_sourceTransportPort, 2},
+  {"DestinationTransportPort", netflow.IPFIX_FIELD_destinationTransportPort, 2},
+```
+
+under the development
+```
+  {"forwardingStatus", 89, 1}
+```
+
+follow will be supported, in mid term
+```
+  {"flowDirection", netflow.IPFIX_FIELD_flowDirection, 1},
+  {"tcpControlBits", netflow.IPFIX_FIELD_tcpControlBits, 1},
+  {"icmpTypeCodeIPv4", netflow.IPFIX_FIELD_icmpTypeCodeIPv4, 2},
+```
+
+follow will be supported, in long term
+```
+  {"ipClassOfService", netflow.IPFIX_FIELD_ipClassOfService, 1},
+  {"sourceIPv4PrefixLength", netflow.IPFIX_FIELD_sourceIPv4PrefixLength, 1},
+  {"destinationIPv4PrefixLength", netflow.IPFIX_FIELD_destinationIPv4PrefixLength, 1},
+  {"ipNextHopIPv4Address", netflow.IPFIX_FIELD_ipNextHopIPv4Address, 4},
+  {"bgpSourceAsNumber", netflow.IPFIX_FIELD_bgpSourceAsNumber, 4},
+  {"bgpDestinationAsNumber", netflow.IPFIX_FIELD_bgpDestinationAsNumber, 4},
+  {"bgpNextHopIPv4Address", netflow.IPFIX_FIELD_bgpNextHopIPv4Address, 4},
+  {"minimumTTL", netflow.IPFIX_FIELD_minimumTTL, 1},
+  {"maximumTTL", netflow.IPFIX_FIELD_maximumTTL, 1},
+  {"fragmentIdentification", netflow.IPFIX_FIELD_fragmentIdentification, 4},
+  {"vlanId", netflow.IPFIX_FIELD_vlanId, 2},
+  {"flowEndReason", netflow.IPFIX_FIELD_flowEndReason, 1},
+  {"dot1qVlanId", netflow.IPFIX_FIELD_dot1qVlanId, 2},
+  {"dot1qCustomerVlanId", netflow.IPFIX_FIELD_dot1qCustomerVlanId, 2},
+```
+
+
+### Supported IPFIX Enterprise IE
+
+Enterprise No: 28972
+([Keio University, iana registry](https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers)).
+It may be updated by LINE Corporation
+
+```
+```
