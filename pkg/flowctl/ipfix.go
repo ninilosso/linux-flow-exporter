@@ -251,9 +251,9 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	tickerFinished := time.NewTicker(10 * time.Second)
-	ticketForce := time.NewTicker(60 * time.Second)
-	tickerForTemplateFlush := time.NewTicker(30 * time.Second)
+	tickerFinished := time.NewTicker(time.Duration(config.TimerFinishedDrainSeconds) * time.Second)
+	ticketForce := time.NewTicker(time.Duration(config.TimerForceDrainSeconds) * time.Second)
+	tickerForTemplateFlush := time.NewTicker(time.Duration(config.TimerTemplateFlushSeconds) * time.Second)
 	perfEvent, err := ebpfmap.StartReader()
 	if err != nil {
 		return err

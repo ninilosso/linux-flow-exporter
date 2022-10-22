@@ -51,11 +51,11 @@ type Config struct {
 	TimerTemplateFlushSeconds uint `yaml:"timerTemplateFlushSeconds"`
 	// TimerFinishedDrainSecond indicates the interval to drain the finished Flow.
 	// This interval is shared by all output instances.
-	TimerFinishedDrainSeconds int `yaml:"timerFinishedDrainSeconds"`
+	TimerFinishedDrainSeconds uint `yaml:"timerFinishedDrainSeconds"`
 	// TimerForceDrainSecond specifies the interval to force a full Cache to be
 	// drained for each Interface. This interval is shared by all output
 	// instances.
-	TimerForceDrainSeconds int `yaml:"timerForceDrainSeconds"`
+	TimerForceDrainSeconds uint `yaml:"timerForceDrainSeconds"`
 	// Output can contain multiple destinations to which the recorded flow cache
 	// is transferred. IPFIX Collector, Filelog, etc. can be specified.
 	Outputs   []Output `yaml:"outputs"`
