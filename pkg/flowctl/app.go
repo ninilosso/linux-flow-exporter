@@ -237,18 +237,43 @@ func NewCommandDependencyCheck() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "dependency-check",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			validate := func(a, b string) string {
+				if semver.Compare(a, b) >= 0 {
+					return "VALID"
+				} else {
+					return "INVALID"
+				}
+			}
+
+			// Verify clang version
 			clangVersionExpected := "v10.0.0"
 			clangVersion, err := util.GetClangVersion()
 			if err != nil {
 				return err
 			}
-			fmt.Printf("clang version (expect %s): %s ", clangVersionExpected,
-				clangVersion)
-			if semver.Compare(clangVersion, clangVersionExpected) >= 0 {
-				fmt.Println("(VALID)")
-			} else {
-				fmt.Println("(INVALID)")
+			fmt.Printf("clang version (expect %s): %s (%s)\n",
+				clangVersionExpected, clangVersion,
+				validate(clangVersion, clangVersionExpected))
+
+			// Verify kernel version
+			kernelVersionExpected := "v10.0.0"
+			kernelVersion, err := util.GetKernelVersion()
+			if err != nil {
+				return err
 			}
+			fmt.Printf("kernel version (expect %s): %s (%s)\n",
+				kernelVersionExpected, kernelVersion,
+				validate(kernelVersion, kernelVersionExpected))
+
+			// Verify iproute2 version
+			iproute2VersionExpected := "v10.0.0"
+			iproute2Version, err := util.GetIproute2Version()
+			if err != nil {
+				return err
+			}
+			fmt.Printf("iproute2 version (expect %s): %s (%s)\n",
+				iproute2VersionExpected, iproute2Version,
+				validate(iproute2Version, iproute2VersionExpected))
 			return nil
 		},
 	}
