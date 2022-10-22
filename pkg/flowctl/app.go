@@ -237,16 +237,20 @@ func NewCommandDependencyCheck() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "dependency-check",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			validate := func(a, b string) string {
-				if semver.Compare(a, b) >= 0 {
-					return "VALID"
+			validate := func(currentVersion, expectedVersion string) string {
+				if currentVersion == "" {
+					return "NOT-INSTALLED"
 				} else {
-					return "INVALID"
+					if semver.Compare(currentVersion, expectedVersion) >= 0 {
+						return "VALID"
+					} else {
+						return "INVALID"
+					}
 				}
 			}
 
 			clangVersionExpected := "v10.0.0"
-			kernelVersionExpected := "v10.0.0"
+			kernelVersionExpected := "v5.4.0"
 			iproute2binVersionExpected := "v5.4.0"
 			iproute2lbpfVersionExpected := "v0.8.0"
 

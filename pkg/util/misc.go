@@ -36,6 +36,10 @@ import (
 // DOCKER-TESTED: [centos:centos7, ubuntu:22.04, fedora:37]
 func GetClangVersion() (string, error) {
 	clangPath := which.Which("clang")
+	if clangPath == "" {
+		return "", nil
+	}
+
 	out, err := LocalExecutef("%s --version", clangPath)
 	if err != nil {
 		return "", err
@@ -88,6 +92,10 @@ func GetKernelVersion() (string, error) {
 
 func GetIproute2Version() (string, string, error) {
 	iproute2Path := which.Which("ip")
+	if iproute2Path == "" {
+		return "", "", nil
+	}
+
 	out, err := LocalExecutef("%s -V", iproute2Path)
 	if err != nil {
 		return "", "", err
@@ -95,9 +103,11 @@ func GetIproute2Version() (string, string, error) {
 
 	// [EXAMPLE:centos 7]
 	// $ ip -V
+	// ip utility, iproute2-ss170501
 	//
 	// [EXAMPLE:ubuntu 20.04]
 	// $ ip -V
+	// ip utility, iproute2-5.18.0, libbpf 0.8.0
 	//
 	// [EXAMPLE: fedora 37]
 	// $ ip -V
@@ -114,7 +124,9 @@ func GetIproute2Version() (string, string, error) {
 			if len(subwords) < 2 {
 				return "", "", fmt.Errorf("invalid formant (%s)", word)
 			}
-			binVersion = fmt.Sprintf("v%s", subwords[1])
+			if semver.IsValid(subwords[1]) {
+				binVersion = fmt.Sprintf("v%s", subwords[1])
+			}
 		}
 		if idx > 1 && strings.Replace(words[idx-1], ",", "", -1) == "libbpf" {
 			libVersion = fmt.Sprintf("v%s", word)
