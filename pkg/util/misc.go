@@ -86,10 +86,6 @@ func GetClangVersion() (string, error) {
 	return "", fmt.Errorf("version unresolved")
 }
 
-func GetKernelVersion() (string, error) {
-	return "v100.0.0", nil
-}
-
 func GetIproute2Version() (string, string, error) {
 	iproute2Path := which.Which("ip")
 	if iproute2Path == "" {
@@ -134,4 +130,8 @@ func GetIproute2Version() (string, string, error) {
 	}
 
 	return binVersion, libVersion, nil
+}
+
+func GetKernelVersion() (string, error) {
+	return "v100.0.0", nil
 }
