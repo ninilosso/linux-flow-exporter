@@ -83,6 +83,7 @@ func NewCommandMeterAttach() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "attach",
 		RunE: func(cmd *cobra.Command, args []string) error {
+
 			// Ensure bpf file content
 			if err := os.MkdirAll("/var/run/flowctl", os.ModePerm); err != nil {
 				return err
@@ -95,10 +96,16 @@ func NewCommandMeterAttach() *cobra.Command {
 				filterBpfFileContent, 0644); err != nil {
 				return err
 			}
+
+			filterBpfObjectPath := fmt.Sprintf("%s.%s.%s.%d.o", fileprefix,
+				cliOptMeter.Attach.Netns, cliOptMeter.Attach.Name,
+				cliOptMeter.Attach.InterfaceMaxFlowLimit)
+
+			// Build
 			if _, err := util.LocalExecutef(
-				"clang -target bpf -O3 -g -DINTERFACE_MAX_FLOW_LIMIT=%d -c %s.c -o %s.o",
+				"clang -target bpf -O3 -g -DINTERFACE_MAX_FLOW_LIMIT=%d -c %s.c -o %s",
 				cliOptMeter.Attach.InterfaceMaxFlowLimit,
-				fileprefix, fileprefix,
+				fileprefix, filterBpfObjectPath,
 			); err != nil {
 				return err
 			}
@@ -152,10 +159,10 @@ func NewCommandMeterAttach() *cobra.Command {
 			//   bpf obj ./cmd/ebpflow/filter.bpf.o section tc-egress
 			if _, err := util.LocalExecutef("%s tc filter add dev %s egress "+
 				"pref %d chain %d handle 0x%x "+
-				"bpf obj %s.o section %s", netnsPreCmd, cliOptMeter.Attach.Name,
+				"bpf obj %s section %s", netnsPreCmd, cliOptMeter.Attach.Name,
 				cliOptMeter.Attach.Pref, cliOptMeter.Attach.Chain,
 				cliOptMeter.Attach.Handle,
-				fileprefix,
+				filterBpfObjectPath,
 				cliOptMeter.Attach.Section,
 			); err != nil {
 				return err
