@@ -1,7 +1,7 @@
 maxIpfixMessageLen: 100
-timerFinishedDrainSeconds: 1
-timerForceDrainSeconds: 5
-timerTemplateFlushSeconds: 5
+timerFinishedDrainSeconds: 5
+timerForceDrainSeconds: 30
+timerTemplateFlushSeconds: 60
 
 ## FUTURE PLAN??
 # flowMetering:
