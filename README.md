@@ -99,6 +99,10 @@ supported
 src, string
 dst, string
 proto, string
+starttime
+endtime
+pkts
+bytes
 ```
 
 consideration to support
