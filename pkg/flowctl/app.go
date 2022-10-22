@@ -19,12 +19,18 @@ limitations under the License.
 package flowctl
 
 import (
+	"crypto/sha1"
+	_ "embed"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/goroute2"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/util"
 )
+
+//go:embed data/filter.bpf.c
+var filterBpfFileContent []byte
 
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -53,7 +59,6 @@ var cliOptMeter = struct {
 		Override bool
 		Netns    string
 		Name     string
-		Bpf      string
 		Section  string
 		Pref     uint
 		Chain    uint
@@ -72,6 +77,25 @@ func NewCommandMeterAttach() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "attach",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Ensure bpf file content
+			if err := os.MkdirAll("/var/run/flowctl", os.ModePerm); err != nil {
+				return err
+			}
+			hash := sha1.New()
+			hash.Write(filterBpfFileContent)
+			hashval := hash.Sum(nil)
+			fileprefix := fmt.Sprintf("/var/run/flowctl/%x.bpf", hashval)
+			if err := os.WriteFile(fmt.Sprintf("%s.c", fileprefix),
+				filterBpfFileContent, 0644); err != nil {
+				return err
+			}
+			if _, err := util.LocalExecutef(
+				"clang -target bpf -O3 -g -c %s.c -o %s.o",
+				fileprefix, fileprefix,
+			); err != nil {
+				return err
+			}
+
 			netnsPreCmd := ""
 			if cliOptMeter.Attach.Netns != "" {
 				netnsPreCmd = fmt.Sprintf("ip netns exec %s", cliOptMeter.Attach.Netns)
@@ -121,10 +145,11 @@ func NewCommandMeterAttach() *cobra.Command {
 			//   bpf obj ./cmd/ebpflow/filter.bpf.o section tc-egress
 			if _, err := util.LocalExecutef("%s tc filter add dev %s egress "+
 				"pref %d chain %d handle 0x%x "+
-				"bpf obj %s section %s", netnsPreCmd, cliOptMeter.Attach.Name,
+				"bpf obj %s.o section %s", netnsPreCmd, cliOptMeter.Attach.Name,
 				cliOptMeter.Attach.Pref, cliOptMeter.Attach.Chain,
 				cliOptMeter.Attach.Handle,
-				cliOptMeter.Attach.Bpf, cliOptMeter.Attach.Section,
+				fileprefix,
+				cliOptMeter.Attach.Section,
 			); err != nil {
 				return err
 			}
@@ -137,8 +162,6 @@ func NewCommandMeterAttach() *cobra.Command {
 		"Target interface name")
 	cmd.Flags().StringVar(&cliOptMeter.Attach.Netns, "netns", "",
 		"Target interface network namespace name")
-	cmd.Flags().StringVar(&cliOptMeter.Attach.Bpf, "bpf",
-		"cmd/ebpflow/filter.bpf.o", "Target bpf byte code file name")
 	cmd.Flags().StringVar(&cliOptMeter.Attach.Section, "section",
 		"tc-egress", "Target section name of bpf byte code")
 	cmd.Flags().UintVar(&cliOptMeter.Attach.Pref, "pref", 100,
