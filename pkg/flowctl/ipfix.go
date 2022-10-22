@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -36,6 +37,14 @@ var cliOptIpfix = struct {
 	Config   string
 	FlowFile string
 }{}
+
+var slog logr.Logger
+
+func init() {
+	cfg := zap.NewProductionConfig()
+	zapLog, _ := cfg.Build()
+	slog = zapr.NewLogger(zapLog)
+}
 
 func NewCommandIpfix() *cobra.Command {
 	cmd := &cobra.Command{
@@ -255,7 +264,7 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 	for {
 		select {
 		case pe := <-perfEvent:
-			fmt.Printf("main: map=%d ifindex=%d map-full\n", pe.MapID, pe.Ifindex())
+			slog.Info("map is full", "mapfd", pe.MapID, "ifindex", pe.Ifindex())
 			ebpfFlows, err := ebpfmap.Dump()
 			if err != nil {
 				return err
