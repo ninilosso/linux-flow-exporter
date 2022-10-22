@@ -45,9 +45,21 @@ func (o Output) Valid() bool {
 }
 
 type Config struct {
-	MaxIpfixMessageLen int      `yaml:"maxIpfixMessageLen"`
-	Outputs            []Output `yaml:"outputs"`
-	Templates          []struct {
+	// MaxIpfixMessageLen Indicates the maximum size of an IPFIX message. The
+	// message is divided and sent according to this value. This value is shared
+	// by all collector output instances.
+	MaxIpfixMessageLen int `yaml:"maxIpfixMessageLen"`
+	// TimerFinishedDrainSecond indicates the interval to drain the finished Flow.
+	// This interval is shared by all output instances.
+	TimerFinishedDrainSecond int `yaml:"timerFinishedDrainSecond"`
+	// TimerForceDrainSecond specifies the interval to force a full Cache to be
+	// drained for each Interface. This interval is shared by all output
+	// instances.
+	TimerForceDrainSecond int `yaml:"timerForceDrainSecond"`
+	// Output can contain multiple destinations to which the recorded flow cache
+	// is transferred. IPFIX Collector, Filelog, etc. can be specified.
+	Outputs   []Output `yaml:"outputs"`
+	Templates []struct {
 		ID       uint16 `yaml:"id"`
 		Template []struct {
 			Name string `yaml:"name"`
