@@ -25,6 +25,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/mod/semver"
+
 	"github.com/wide-vsix/linux-flow-exporter/pkg/goroute2"
 	"github.com/wide-vsix/linux-flow-exporter/pkg/util"
 )
@@ -41,6 +43,7 @@ func NewCommand() *cobra.Command {
 	cmd.AddCommand(NewCommandIpfix())
 	cmd.AddCommand(NewCommandPrometheus())
 	cmd.AddCommand(NewCommandMeter())
+	cmd.AddCommand(NewCommandDependencyCheck())
 	cmd.AddCommand(util.NewCmdCompletion(cmd))
 	return cmd
 }
@@ -227,5 +230,27 @@ func NewCommandMeterDetach() *cobra.Command {
 		"Target chain idx of tc-egress")
 	cmd.Flags().UintVar(&cliOptMeter.Detach.Handle, "handle", 1,
 		"Target handle idx of chain of tc-egress")
+	return cmd
+}
+
+func NewCommandDependencyCheck() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "dependency-check",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clangVersionExpected := "v10.0.0"
+			clangVersion, err := util.GetClangVersion()
+			if err != nil {
+				return err
+			}
+			fmt.Printf("clang version (expect %s): %s ", clangVersionExpected,
+				clangVersion)
+			if semver.Compare(clangVersion, clangVersionExpected) >= 0 {
+				fmt.Println("(VALID)")
+			} else {
+				fmt.Println("(INVALID)")
+			}
+			return nil
+		},
+	}
 	return cmd
 }
