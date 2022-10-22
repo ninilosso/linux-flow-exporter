@@ -107,9 +107,6 @@ func fnIpfixTemplate(cmd *cobra.Command, args []string) error {
 			if !o.Valid() {
 				return fmt.Errorf("invalid config")
 			}
-			if o.Log != nil {
-				fmt.Printf("LOG!!\n")
-			}
 			if o.Collector != nil {
 				if err := util.UdpTransmit(o.Collector.LocalAddress,
 					o.Collector.RemoteAddress, &buf2); err != nil {
@@ -155,9 +152,6 @@ func fnIpfixDump(cmd *cobra.Command, args []string) error {
 		if !o.Valid() {
 			return fmt.Errorf("invalid config")
 		}
-		if o.Log != nil {
-			fmt.Printf("LOG!!!\n")
-		}
 		if o.Collector != nil {
 			if err := util.UdpTransmit(o.Collector.LocalAddress,
 				o.Collector.RemoteAddress, &buf1); err != nil {
@@ -192,7 +186,9 @@ func fnIpfixDump(cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("invalid config")
 			}
 			if o.Log != nil {
-				fmt.Printf("LOG193934n")
+				if err := FlowOutputLog(ebpfFlows, o.Log.File); err != nil {
+					return err
+				}
 			}
 			if o.Collector != nil {
 				if err := util.UdpTransmit(o.Collector.LocalAddress,
@@ -239,9 +235,6 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 		if !o.Valid() {
 			return fmt.Errorf("invalid config")
 		}
-		if o.Log != nil {
-			fmt.Printf("LOG3939493\n")
-		}
 		if o.Collector != nil {
 			if err := util.UdpTransmit(o.Collector.LocalAddress,
 				o.Collector.RemoteAddress, &buf1); err != nil {
@@ -278,7 +271,7 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 			}
 
 		case <-tickerFinished.C:
-			println("FINISHED LOG")
+			fmt.Printf("FINISHED LOG\n")
 			ebpfFlows, err := ebpfmap.Dump()
 			if err != nil {
 				return err
@@ -294,7 +287,7 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 			}
 
 		case <-ticketForce.C:
-			println("FORCE LOG")
+			fmt.Printf("FORCE LOG\n")
 			ebpfFlows, err := ebpfmap.Dump()
 			if err != nil {
 				return err
@@ -309,7 +302,7 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 				return err
 			}
 		case <-tickerForTemplateFlush.C:
-			println("TEMPLATE LOG")
+			fmt.Printf("TEMPLATE LOG\n")
 			buf1 := bytes.Buffer{}
 			templateMessage, err := config.ToFlowTemplatesMessage()
 			if err != nil {
