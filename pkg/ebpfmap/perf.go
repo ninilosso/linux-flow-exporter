@@ -56,7 +56,7 @@ func StartReader() (chan PerfObject, error) {
 		go func(id ebpf.MapID) {
 			for {
 				if err := StartReaderPerMap(id, poCh); err != nil {
-					fmt.Printf("LOG: %s ... ignored", err.Error())
+					fmt.Printf("FAIL: %s ... ignored", err.Error())
 				}
 			}
 		}(id)
