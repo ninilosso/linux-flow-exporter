@@ -265,15 +265,19 @@ func NewCommandDependencyCheck() *cobra.Command {
 				kernelVersionExpected, kernelVersion,
 				validate(kernelVersion, kernelVersionExpected))
 
-			// Verify iproute2 version
-			iproute2VersionExpected := "v10.0.0"
-			iproute2Version, err := util.GetIproute2Version()
+			// Verify iproute2 and its libbpf version
+			iproute2binVersion, iproute2lbpfVersion, err := util.GetIproute2Version()
+			iproute2binVersionExpected := "v10.0.0"
+			iproute2lbpfVersionExpected := "v10.0.0"
 			if err != nil {
 				return err
 			}
-			fmt.Printf("iproute2 version (expect %s): %s (%s)\n",
-				iproute2VersionExpected, iproute2Version,
-				validate(iproute2Version, iproute2VersionExpected))
+			fmt.Printf("iproute2 binary version (expect %s): %s (%s)\n",
+				iproute2binVersionExpected, iproute2binVersion,
+				validate(iproute2binVersion, iproute2binVersionExpected))
+			fmt.Printf("iproute2 libbpf version (expect %s): %s (%s)\n",
+				iproute2lbpfVersionExpected, iproute2lbpfVersion,
+				validate(iproute2lbpfVersion, iproute2lbpfVersionExpected))
 			return nil
 		},
 	}
