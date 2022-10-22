@@ -344,7 +344,7 @@ func NewCommandEbpfCodeDump() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "code-dump",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Print(string(filterBpfFileContent))
+			fmt.Printf("%s\n", string(filterBpfFileContent))
 			return nil
 		},
 	}
