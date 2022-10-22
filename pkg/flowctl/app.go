@@ -44,6 +44,7 @@ func NewCommand() *cobra.Command {
 	cmd.AddCommand(NewCommandPrometheus())
 	cmd.AddCommand(NewCommandMeter())
 	cmd.AddCommand(NewCommandDependencyCheck())
+	cmd.AddCommand(NewCommandEbpf())
 	cmd.AddCommand(util.NewCmdCompletion(cmd))
 	return cmd
 }
@@ -54,6 +55,7 @@ func NewCommandMeter() *cobra.Command {
 	}
 	cmd.AddCommand(NewCommandMeterAttach())
 	cmd.AddCommand(NewCommandMeterDetach())
+	cmd.AddCommand(NewCommandMeterStatus())
 	return cmd
 }
 
@@ -324,6 +326,36 @@ func NewCommandDependencyCheck() *cobra.Command {
 				return err
 			}
 			sc.DumpToStdout()
+			return nil
+		},
+	}
+	return cmd
+}
+
+func NewCommandEbpf() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "ebpf",
+	}
+	cmd.AddCommand(NewCommandEbpfCodeDump())
+	return cmd
+}
+
+func NewCommandEbpfCodeDump() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "code-dump",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Print(string(filterBpfFileContent))
+			return nil
+		},
+	}
+	return cmd
+}
+
+func NewCommandMeterStatus() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "status",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO(slankdev)
 			return nil
 		},
 	}
