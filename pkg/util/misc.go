@@ -72,3 +72,11 @@ func GetClangVersion() (string, error) {
 	}
 	return "", fmt.Errorf("version unresolved")
 }
+
+func GetLinuxKernelVersion() (string, error) {
+	return "", nil
+}
+
+func GetIproute2Version() (string, error) {
+	return "", nil
+}
