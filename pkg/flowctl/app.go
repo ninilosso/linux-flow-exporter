@@ -95,11 +95,6 @@ func NewCommandMeterAttach() *cobra.Command {
 				filterBpfFileContent, 0644); err != nil {
 				return err
 			}
-			fmt.Printf(
-				"clang -target bpf -O3 -g -DINTERFACE_MAX_FLOW_LIMIT=%d -c %s.c -o %s.o\n",
-				cliOptMeter.Attach.InterfaceMaxFlowLimit,
-				fileprefix, fileprefix,
-			)
 			if _, err := util.LocalExecutef(
 				"clang -target bpf -O3 -g -DINTERFACE_MAX_FLOW_LIMIT=%d -c %s.c -o %s.o",
 				cliOptMeter.Attach.InterfaceMaxFlowLimit,
