@@ -261,16 +261,12 @@ process_ethernet(struct __sk_buff *skb)
 SEC("tc-ingress") int
 count_packets_ingress(struct __sk_buff *skb)
 {
-  char msg[] = "ifindex=%u,%u";
-  bpf_trace_printk(msg, sizeof(msg), skb->ingress_ifindex, skb->ifindex);
   return process_ethernet(skb);
 }
 
 SEC("tc-egress") int
 count_packets_egress(struct __sk_buff *skb)
 {
-  char msg[] = "ifindex=%u,%u,%u";
-  bpf_trace_printk(msg, sizeof(msg), skb->ingress_ifindex, skb->ifindex, skb->mark);
   return process_ethernet(skb);
 }
 
