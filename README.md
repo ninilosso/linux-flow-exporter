@@ -19,10 +19,19 @@ with less performance issues.
   - linux kernel 5.x+
   - iproute2 5.18+
 
-Requirements(I tested with):
+Requirements: you can verifiy compatibity with `dependency-check` subcmd.
+- `clang --version`: 10.0.0
 - `uname -r`: 5.15.0-1008-gcp
 - `ip -V`: ip utility, iproute2-5.18.0, libbpf 0.8.0
   - iproute2 is needed to attach ebpf program into the kernel.
+
+```
+$ sudo flowctl dependency-check
+clang version (expect v10.0.0): v12.0.1 (VALID)
+kernel version (expect v5.4.0): v5.15.0 (VALID)
+iproute2 binary version (expect v5.4.0): v5.18.0 (VALID)
+iproute2 libbpf version (expect v0.8.0): v0.8.0 (VALID)
+```
 
 ![](./img/linux_datapath.drawio.svg)
 
