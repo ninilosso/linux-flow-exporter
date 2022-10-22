@@ -63,6 +63,9 @@ var cliOptMeter = struct {
 		Pref     uint
 		Chain    uint
 		Handle   uint
+		// InterfaceMaxFlowLimit will be mapped on follow
+		// #define INTERFACE_MAX_FLOW_LIMIT 6
+		InterfaceMaxFlowLimit uint
 	}
 	Detach struct {
 		Netns  string
@@ -89,8 +92,14 @@ func NewCommandMeterAttach() *cobra.Command {
 				filterBpfFileContent, 0644); err != nil {
 				return err
 			}
+			fmt.Printf(
+				"clang -target bpf -O3 -g -DINTERFACE_MAX_FLOW_LIMIT=%d -c %s.c -o %s.o\n",
+				cliOptMeter.Attach.InterfaceMaxFlowLimit,
+				fileprefix, fileprefix,
+			)
 			if _, err := util.LocalExecutef(
-				"clang -target bpf -O3 -g -c %s.c -o %s.o",
+				"clang -target bpf -O3 -g -DINTERFACE_MAX_FLOW_LIMIT=%d -c %s.c -o %s.o",
+				cliOptMeter.Attach.InterfaceMaxFlowLimit,
 				fileprefix, fileprefix,
 			); err != nil {
 				return err
@@ -170,6 +179,9 @@ func NewCommandMeterAttach() *cobra.Command {
 		"Target chain idx of tc-egress")
 	cmd.Flags().UintVar(&cliOptMeter.Attach.Handle, "handle", 1,
 		"Target handle idx of chain of tc-egress")
+	cmd.Flags().UintVarP(&cliOptMeter.Attach.InterfaceMaxFlowLimit,
+		"interface-max-flow-limit", "l", 6,
+		"eBPF map max size for each interfaces")
 	return cmd
 }
 

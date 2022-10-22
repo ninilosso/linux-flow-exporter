@@ -34,7 +34,9 @@ limitations under the License.
 
 #define IP_MF     0x2000
 #define IP_OFFSET 0x1FFF
-#define INTERFACE_MAX_FLOW_LIMIT 6
+#ifndef INTERFACE_MAX_FLOW_LIMIT
+#define INTERFACE_MAX_FLOW_LIMIT 8
+#endif /* INTERFACE_MAX_FLOW_LIMIT */
 #define MAX_INTERFACES 512
 
 #define assert_len(interest, end)                 \
