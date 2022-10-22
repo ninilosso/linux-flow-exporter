@@ -280,7 +280,7 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 			}
 
 		case <-tickerFinished.C:
-			fmt.Printf("FINISHED LOG\n")
+			slog.Info("drain finished flow")
 			ebpfFlows, err := ebpfmap.Dump()
 			if err != nil {
 				return err
@@ -296,7 +296,7 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 			}
 
 		case <-ticketForce.C:
-			fmt.Printf("FORCE LOG\n")
+			slog.Info("force drain current flows")
 			ebpfFlows, err := ebpfmap.Dump()
 			if err != nil {
 				return err
@@ -311,7 +311,7 @@ func fnIpfixAgent(cmd *cobra.Command, args []string) error {
 				return err
 			}
 		case <-tickerForTemplateFlush.C:
-			fmt.Printf("TEMPLATE LOG\n")
+			slog.Info("flush ipfix template")
 			buf1 := bytes.Buffer{}
 			templateMessage, err := config.ToFlowTemplatesMessage()
 			if err != nil {
