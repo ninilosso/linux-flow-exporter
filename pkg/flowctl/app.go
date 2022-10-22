@@ -355,9 +355,70 @@ func NewCommandMeterStatus() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "status",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO(slankdev)
+			netnsList, err := goroute2.ListNetns()
+			if err != nil {
+				return err
+			}
+
+			// Non-root netns
+			for _, netns := range netnsList {
+				links, err := goroute2.ListLink(netns)
+				if err != nil {
+					return err
+				}
+				for _, link := range links {
+					if link.Ifname != "lo" {
+						name, err := getTcEbpfByteCode(netns, link.Ifname)
+						if err != nil {
+							return err
+						}
+						if name == "" {
+							name = "<n/a>"
+						}
+						fmt.Printf("%s.%s: %s\n", netns, link.Ifname, name)
+					}
+				}
+			}
+
+			// Root netns (default)
+			links, err := goroute2.ListLink("")
+			if err != nil {
+				return err
+			}
+			for _, link := range links {
+				if link.Ifname != "lo" {
+					name, err := getTcEbpfByteCode("", link.Ifname)
+					if err != nil {
+						return err
+					}
+					if name == "" {
+						name = "<n/a>"
+					}
+					fmt.Printf("DEFAULT.%s: %s\n", link.Ifname, name)
+				}
+			}
+
 			return nil
 		},
 	}
 	return cmd
+}
+
+func getTcEbpfByteCode(netns, dev string) (string, error) {
+	clsActIsEnabled, err := goroute2.ClsActIsEnabled(netns, dev)
+	if err != nil {
+		return "", err
+	}
+	if clsActIsEnabled {
+		rules, err := goroute2.ListTcFilterRules(netns, dev)
+		if err != nil {
+			return "", err
+		}
+		for _, rule := range rules {
+			if rule.Kind == "bpf" && rule.Options.BpfName != "" {
+				return rule.Options.BpfName, nil
+			}
+		}
+	}
+	return "", nil
 }
