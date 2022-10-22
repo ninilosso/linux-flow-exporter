@@ -245,8 +245,12 @@ func NewCommandDependencyCheck() *cobra.Command {
 				}
 			}
 
-			// Verify clang version
 			clangVersionExpected := "v10.0.0"
+			kernelVersionExpected := "v10.0.0"
+			iproute2binVersionExpected := "v5.4.0"
+			iproute2lbpfVersionExpected := "v0.8.0"
+
+			// Verify clang version
 			clangVersion, err := util.GetClangVersion()
 			if err != nil {
 				return err
@@ -256,7 +260,6 @@ func NewCommandDependencyCheck() *cobra.Command {
 				validate(clangVersion, clangVersionExpected))
 
 			// Verify kernel version
-			kernelVersionExpected := "v10.0.0"
 			kernelVersion, err := util.GetKernelVersion()
 			if err != nil {
 				return err
@@ -267,8 +270,6 @@ func NewCommandDependencyCheck() *cobra.Command {
 
 			// Verify iproute2 and its libbpf version
 			iproute2binVersion, iproute2lbpfVersion, err := util.GetIproute2Version()
-			iproute2binVersionExpected := "v10.0.0"
-			iproute2lbpfVersionExpected := "v10.0.0"
 			if err != nil {
 				return err
 			}
