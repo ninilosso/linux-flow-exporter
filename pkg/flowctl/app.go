@@ -233,56 +233,95 @@ func NewCommandMeterDetach() *cobra.Command {
 	return cmd
 }
 
+type SystemCapability struct {
+	ClangVersionCurrent         string
+	ClangVersionExpected        string
+	KernelVersionCurrent        string
+	KernelVersionExpected       string
+	Iproute2binVersionCurrent   string
+	Iproute2binVersionExpected  string
+	Iproute2lbpfVersionCurrent  string
+	Iproute2lbpfVersionExpected string
+}
+
+func (sc *SystemCapability) Get() error {
+	var err error
+	sc.ClangVersionExpected = "v10.0.0"
+	sc.KernelVersionExpected = "v5.4.0"
+	sc.Iproute2binVersionExpected = "v5.4.0"
+	sc.Iproute2lbpfVersionExpected = "v0.8.0"
+	sc.ClangVersionCurrent, err = util.GetClangVersion()
+	if err != nil {
+		return err
+	}
+	sc.KernelVersionCurrent, err = util.GetKernelVersion()
+	if err != nil {
+		return err
+	}
+	sc.Iproute2binVersionCurrent, sc.Iproute2lbpfVersionCurrent, err = util.GetIproute2Version()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (sc SystemCapability) Capable() bool {
+	if semver.Compare(sc.ClangVersionCurrent, sc.ClangVersionExpected) < 0 {
+		return false
+	}
+	if semver.Compare(sc.KernelVersionCurrent, sc.KernelVersionExpected) < 0 {
+		return false
+	}
+	if semver.Compare(sc.Iproute2binVersionCurrent, sc.Iproute2binVersionExpected) < 0 {
+		return false
+	}
+	if semver.Compare(sc.Iproute2lbpfVersionCurrent, sc.Iproute2lbpfVersionExpected) < 0 {
+		return false
+	}
+	return true
+}
+
+func (sc SystemCapability) DumpToStdout() {
+	validate := func(currentVersion, expectedVersion string) string {
+		if currentVersion == "" {
+			return "NOT-INSTALLED"
+		} else {
+			if semver.Compare(currentVersion, expectedVersion) >= 0 {
+				return "VALID"
+			} else {
+				return "INVALID"
+			}
+		}
+	}
+
+	// Verify clang version
+	fmt.Printf("clang version (expect %s): %s (%s)\n",
+		sc.ClangVersionExpected, sc.ClangVersionCurrent,
+		validate(sc.ClangVersionCurrent, sc.ClangVersionExpected))
+
+	// Verify kernel version
+	fmt.Printf("kernel version (expect %s): %s (%s)\n",
+		sc.KernelVersionExpected, sc.KernelVersionCurrent,
+		validate(sc.KernelVersionCurrent, sc.KernelVersionExpected))
+
+	// Verify iproute2 and its libbpf version
+	fmt.Printf("iproute2 binary version (expect %s): %s (%s)\n",
+		sc.Iproute2binVersionExpected, sc.Iproute2binVersionCurrent,
+		validate(sc.Iproute2binVersionCurrent, sc.Iproute2binVersionExpected))
+	fmt.Printf("iproute2 libbpf version (expect %s): %s (%s)\n",
+		sc.Iproute2lbpfVersionExpected, sc.Iproute2lbpfVersionCurrent,
+		validate(sc.Iproute2lbpfVersionCurrent, sc.Iproute2lbpfVersionExpected))
+}
+
 func NewCommandDependencyCheck() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "dependency-check",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			validate := func(currentVersion, expectedVersion string) string {
-				if currentVersion == "" {
-					return "NOT-INSTALLED"
-				} else {
-					if semver.Compare(currentVersion, expectedVersion) >= 0 {
-						return "VALID"
-					} else {
-						return "INVALID"
-					}
-				}
-			}
-
-			clangVersionExpected := "v10.0.0"
-			kernelVersionExpected := "v5.4.0"
-			iproute2binVersionExpected := "v5.4.0"
-			iproute2lbpfVersionExpected := "v0.8.0"
-
-			// Verify clang version
-			clangVersion, err := util.GetClangVersion()
-			if err != nil {
+			sc := SystemCapability{}
+			if err := sc.Get(); err != nil {
 				return err
 			}
-			fmt.Printf("clang version (expect %s): %s (%s)\n",
-				clangVersionExpected, clangVersion,
-				validate(clangVersion, clangVersionExpected))
-
-			// Verify kernel version
-			kernelVersion, err := util.GetKernelVersion()
-			if err != nil {
-				return err
-			}
-			fmt.Printf("kernel version (expect %s): %s (%s)\n",
-				kernelVersionExpected, kernelVersion,
-				validate(kernelVersion, kernelVersionExpected))
-
-			// Verify iproute2 and its libbpf version
-			iproute2binVersion, iproute2lbpfVersion, err := util.GetIproute2Version()
-			if err != nil {
-				return err
-			}
-			fmt.Printf("iproute2 binary version (expect %s): %s (%s)\n",
-				iproute2binVersionExpected, iproute2binVersion,
-				validate(iproute2binVersion, iproute2binVersionExpected))
-			fmt.Printf("iproute2 libbpf version (expect %s): %s (%s)\n",
-				iproute2lbpfVersionExpected, iproute2lbpfVersion,
-				validate(iproute2lbpfVersion, iproute2lbpfVersionExpected))
+			sc.DumpToStdout()
 			return nil
 		},
 	}
