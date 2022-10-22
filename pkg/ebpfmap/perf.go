@@ -6,7 +6,6 @@ import (
 
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/perf"
-	"github.com/k0kubun/pp"
 )
 
 type PerfObject struct {
@@ -21,7 +20,6 @@ func (po PerfObject) Ifindex() uint32 {
 }
 
 func StartReaderPerMap(mapID ebpf.MapID, poCh chan PerfObject) error {
-	pp.Println("Started for", mapID)
 	m, err := ebpf.NewMapFromID(mapID)
 	if err != nil {
 		return err
@@ -52,7 +50,6 @@ func StartReader() (chan PerfObject, error) {
 	if err != nil {
 		return nil, err
 	}
-	pp.Println(ids)
 
 	poCh := make(chan PerfObject, 10)
 	for _, id := range ids {
@@ -64,7 +61,6 @@ func StartReader() (chan PerfObject, error) {
 			}
 		}(id)
 	}
-	pp.Println("Started all")
 
 	return poCh, nil
 }

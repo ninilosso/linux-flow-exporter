@@ -181,7 +181,6 @@ func fnIpfixDump(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	// pp.Println(flowDataMessages)
 	for _, flowDataMessage := range flowDataMessages {
 		flowDataMessage.Header.SysupTime = uint32(util.TimeNow())
 		buf2 := bytes.Buffer{}
