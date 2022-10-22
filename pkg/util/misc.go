@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/hairyhenderson/go-which"
+	"github.com/zcalusic/sysinfo"
 	"golang.org/x/mod/semver"
 )
 
@@ -120,8 +121,9 @@ func GetIproute2Version() (string, string, error) {
 			if len(subwords) < 2 {
 				return "", "", fmt.Errorf("invalid formant (%s)", word)
 			}
-			if semver.IsValid(subwords[1]) {
-				binVersion = fmt.Sprintf("v%s", subwords[1])
+			binVersionTmp := fmt.Sprintf("v%s", subwords[1])
+			if semver.IsValid(binVersionTmp) {
+				binVersion = binVersionTmp
 			}
 		}
 		if idx > 1 && strings.Replace(words[idx-1], ",", "", -1) == "libbpf" {
@@ -133,5 +135,11 @@ func GetIproute2Version() (string, string, error) {
 }
 
 func GetKernelVersion() (string, error) {
-	return "v100.0.0", nil
+	var si sysinfo.SysInfo
+	si.GetSysInfo()
+	semverVal := fmt.Sprintf("v%s", strings.Split(si.Kernel.Release, "-")[0])
+	if !semver.IsValid(semverVal) {
+		return "", fmt.Errorf("invalid format (%s)", semverVal)
+	}
+	return semverVal, nil
 }
