@@ -1,4 +1,7 @@
 maxIpfixMessageLen: 100
+timerFinishedDrainSeconds: 1
+timerForceDrainSeconds: 5
+timerTemplateFlushSeconds: 5
 
 ## FUTURE PLAN??
 # flowMetering:
@@ -14,20 +17,9 @@ outputs:
 - collector:
     remoteAddress: 35.194.97.218:2055
     localAddress: 0.0.0.0:50101
-
-    # TODO(slankdev): implemente it
-    # timerTemplateFlushSeconds: 60
-    # timerFinishedFlowFlushSeconds: 1
-    # timerForceFlushSeconds: 10
 - collector:
     remoteAddress: localhost:2100
     localAddress: 0.0.0.0:50102
-
-    # TODO(slankdev): implemente it
-    # timerTemplateFlushSeconds: 60
-    # timerFinishedFlowFlushSeconds: 1
-    # timerForceFlushSeconds: 10
-
     # HELPER
     # nfcapd -w -l /tmp/netflow -t 1000 -p 2100
     # nfdump -r /tmp/netflow/nfcapd.202207101030 -o extended

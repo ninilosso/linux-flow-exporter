@@ -25,10 +25,6 @@ import (
 type OutputCollector struct {
 	RemoteAddress string `yaml:"remoteAddress"`
 	LocalAddress  string `yaml:"localAddress"`
-
-	// TimerTemplateFlushSeconds     uint `yaml:"timerTeamplateFlushSeconds"`
-	// TimerFinishedFlowFlushSeconds uint `yaml:"timerFinishedFlowFlushSeconds"`
-	// TimerForceFlushSeconds        uint `yaml:"timerForceFlushSeconds"`
 }
 
 type OutputLog struct {
@@ -49,13 +45,17 @@ type Config struct {
 	// message is divided and sent according to this value. This value is shared
 	// by all collector output instances.
 	MaxIpfixMessageLen int `yaml:"maxIpfixMessageLen"`
+	// TimerTemplateFlushSeconds indicates the interval for sending IPFIX flow
+	// template periodically. This value is shared by all collector output
+	// instances.
+	TimerTemplateFlushSeconds uint `yaml:"timerTemplateFlushSeconds"`
 	// TimerFinishedDrainSecond indicates the interval to drain the finished Flow.
 	// This interval is shared by all output instances.
-	TimerFinishedDrainSecond int `yaml:"timerFinishedDrainSecond"`
+	TimerFinishedDrainSeconds int `yaml:"timerFinishedDrainSeconds"`
 	// TimerForceDrainSecond specifies the interval to force a full Cache to be
 	// drained for each Interface. This interval is shared by all output
 	// instances.
-	TimerForceDrainSecond int `yaml:"timerForceDrainSecond"`
+	TimerForceDrainSeconds int `yaml:"timerForceDrainSeconds"`
 	// Output can contain multiple destinations to which the recorded flow cache
 	// is transferred. IPFIX Collector, Filelog, etc. can be specified.
 	Outputs   []Output `yaml:"outputs"`
