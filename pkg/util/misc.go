@@ -103,7 +103,23 @@ func GetIproute2Version() (string, string, error) {
 	// $ ip -V
 	// ip utility, iproute2-6.0.0, libbpf 0.8.0
 
-	println(out)
+	binVersion := "v0.0.0"
+	libVersion := "v0.0.0"
 
-	return "v100.0.0", "v100.0.0", nil
+	words := strings.Fields(out)
+	for idx := range words {
+		word := strings.Replace(words[idx], ",", "", -1)
+		if strings.Contains(word, "iproute2-") {
+			subwords := strings.Split(word, "-")
+			if len(subwords) < 2 {
+				return "", "", fmt.Errorf("invalid formant (%s)", word)
+			}
+			binVersion = fmt.Sprintf("v%s", subwords[1])
+		}
+		if idx > 1 && strings.Replace(words[idx-1], ",", "", -1) == "libbpf" {
+			libVersion = fmt.Sprintf("v%s", word)
+		}
+	}
+
+	return binVersion, libVersion, nil
 }
